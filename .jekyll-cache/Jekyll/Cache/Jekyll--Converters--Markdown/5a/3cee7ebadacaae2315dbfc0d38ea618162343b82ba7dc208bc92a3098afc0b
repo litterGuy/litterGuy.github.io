@@ -1,7 +1,0 @@
-I"/<p><strong>Master 分支</strong></p>
-<ol>
-  <li>Master 分支应该始终和生产环境保持一致。</li>
-  <li>由于 master 和生产代码是一致的，所以没有人包括技术负责人能在 master 上直接开发。</li>
-  <li>真正的开发代码应当写在其他分支上。</li>
-</ol>
-:ET
