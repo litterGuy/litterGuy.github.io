@@ -1,0 +1,283 @@
+I"�(<h1 id="ssltls整理">SSL/TLS整理</h1>
+<p>主要按照以下四个方面进行</p>
+<ul>
+  <li><a href="#一什么是ssltls">什么是SSL/TLS</a></li>
+  <li><a href="#二协议流程">协议流程</a></li>
+  <li><a href="#三使用wireshark抓取网络包">使用wireshark抓取网络包</a></li>
+  <li><a href="#四使用ssllabs对域名进行分析">使用ssllabs对域名进行分析</a></li>
+  <li><a href="#五ssltls异常处理思路">SSL/TLS异常处理思路</a></li>
+</ul>
+
+<h2 id="一什么是ssltls">一、什么是SSL/TLS</h2>
+<p>SSL全称是Secure Sockets Layer，安全套接字层，它是由网景公司(Netscape)设计的主要用于Web的安全传输协议，目的是为网络通信提供机密性、认证性及数据完整性保障。如今，SSL已经成为互联网保密通信的工业标准。</p>
+
+<p>SSL/TLS协议能够提供的安全目标主要包括如下几个：</p>
+
+<blockquote>
+
+  <p>认证性——借助数字证书认证服务器端和客户端身份，防止身份伪造</p>
+
+  <p>机密性——借助加密防止第三方窃听</p>
+
+  <p>完整性——借助消息认证码(MAC)保障数据完整性，防止消息篡改</p>
+
+  <p>重放保护——通过使用隐式序列号防止重放攻击</p>
+
+</blockquote>
+
+<p>为了实现这些安全目标，SSL/TLS协议被设计为一个两阶段协议，分为握手阶段和应用阶段：</p>
+
+<p>握手阶段也称协商阶段，在这一阶段，客户端和服务器端会认证对方身份(依赖于PKI体系，利用数字证书进行身份认证)，并协商通信中使用的安全参数、密码套件以及MasterSecret。后续通信使用的所有密钥都是通过MasterSecret生成。</p>
+
+<p>在握手阶段完成后，进入应用阶段。在应用阶段通信双方使用握手阶段协商好的密钥进行安全通信。</p>
+
+<p>SSL/TLS协议有一个高度模块化的架构，分为很多子协议，如下图所示：</p>
+
+<p><img src="/images/ssl/protocol-01.jpg" alt="子协议" /></p>
+
+<blockquote>
+
+  <p>Handshake协议：包括协商安全参数和密码套件、服务器身份认证(客户端身份认证可选)、密钥交换;</p>
+
+  <p>ChangeCipherSpec 协议：一条消息表明握手协议已经完成;</p>
+
+  <p>Alert 协议：对握手协议中一些异常的错误提醒，分为fatal和warning两个级别，fatal类型的错误会直接中断SSL链接，而warning级别的错误SSL链接仍可继续，只是会给出错误警告;</p>
+
+  <p>Record 协议：包括对消息的分段、压缩、消息认证和完整性保护、加密等。</p>
+
+</blockquote>
+
+<h2 id="二协议流程">二、协议流程</h2>
+<p>HTTPS的主要作用是在不安全的网络上创建一个基于TLS/SSL协议的安全信道，对窃听和中间人攻击提供一定程度的合理防护。TLS/SSL握手的基本流程如下图描述：</p>
+
+<p><img src="/images/ssl/握手流程.png" alt="TLS/SSL握手基本流程图" /></p>
+
+<blockquote>
+  <ol>
+    <li>Client Hello</li>
+  </ol>
+
+  <ul>
+    <li>Client Hello 报文：客户端对加密算法的支持度不同，因此需要向服务端发送客户端支持的 加密套件（Cipher Suite） ，同时还要生成一个 随机数 同时保存在客户端和发送给服务</li>
+  </ul>
+
+  <ol>
+    <li>Server Hello</li>
+  </ol>
+
+  <ul>
+    <li>ServerCertificate 报文：服务端收到 Client Hello 之后，向客户端发送 CA 认证的数字证书，用来鉴别服务端身份信息，同时还要生成一个 随机数 同时保存在服务端和发送给客户端</li>
+    <li>
+      <p>Server Hello Done 报文：表示服务端宣告第一阶段的客户端服务端握手协商结束</p>
+    </li>
+    <li>
+      <p>可选：Certificate Request 报文：必要情况下，要求客户端发送证书验证身份</p>
+    </li>
+    <li>可选：Server Key Exchange 报文：如果 CA 认证的数字证书提供的信息不够，服务端还可发送提供补充信息</li>
+  </ul>
+
+  <ol>
+    <li>Client Finish</li>
+  </ol>
+
+  <ul>
+    <li>Client Key Exchange 报文：客户端收到 CA 数字证书并通过验证，然后通过 CA 公钥解密获取到 服务端公钥。Client Key Exchange 报文包括有一个随机数，这个随机数被称为 Pre-master key/secret；一个表示随后的信息使用双方协商好的加密方法和密钥发送的 通知 ；还有一个通过协商好的 HASH 算法对前面所有信息内容的 HASH 计算值，用来提供服务端校验。这些信息都通过服务端公钥加密传送给服务端</li>
+    <li>ClientCipherSpec 报文：该报文通知服务端，此后的通信都将使用协商好的加密算法计算对称密钥进行加密通信（也就是使用两个随机数以及第三个 Pre-master key/secret 随机数一起算出一个对称密钥 session key/secret）</li>
+    <li>Finished 报文：该报文包括连接至此的所有报文的校验值，使用服务端公钥进行加密</li>
+    <li>可选：ClientCertificate 报文：如果服务端请求，客户端需要发送 CA 数字证书</li>
+    <li>可选：CertificateVerify 报文：服务端如果要求 CA 数字证书，那么需要通过 HASH 算法计算一个服务端发送来的信息摘要</li>
+  </ul>
+
+  <ol>
+    <li>Server Finish</li>
+  </ol>
+
+  <ul>
+    <li>服务端最后对客户端发送过来的 Finished 报文使用服务端私钥进行解密校验</li>
+    <li>ClientCipherSpec 报文：报文通知服务端，此后的通信都将使用协商好的加密算法计算对称密钥 session key/secret 进行加密通信</li>
+    <li>Finished 报文：标志 TLS 连接建立成功
+      <ol>
+        <li>TLS 握手成功此后通过对称密钥 session key/secret 加密通信</li>
+      </ol>
+    </li>
+  </ul>
+</blockquote>
+
+<p>认证又分单向认证和双向认证，流程分别如下图所示</p>
+
+<p><img src="/images/ssl/单向认证.png" alt="单向认证" /></p>
+
+<p><img src="/images/ssl/双向认证.png" alt="双向认证" /></p>
+
+<h2 id="三使用wireshark抓取网络包">三、使用wireshark抓取网络包</h2>
+<p>wireshark使用不再描述</p>
+
+<ol>
+  <li>Client Hello</li>
+</ol>
+
+<p><img src="/images/ssl/client_hello.png" alt="client hello" /></p>
+
+<p>Client Hello 阶段，客户端给服务端发送一个随机数，以及 Cipher Suites 客户端支持的所有加密套件</p>
+
+<ol>
+  <li>Server Hello</li>
+</ol>
+
+<p><img src="/images/ssl/server_hello.png" alt="server hello" /></p>
+
+<p>Server Hello 阶段，服务端给客户端发送一个随机数，以及选中的 Cipher Suite 加密套件</p>
+
+<p>然后服务端继续发送给客户端 CA 数字证书以及 Server Key Exchange 和 Hello done 信息完成第一阶段的握手：</p>
+
+<p><img src="/images/ssl/handle_done.png" alt="第一阶段握手完成" /></p>
+
+<p>这个是证书：</p>
+
+<p><img src="/images/ssl/certificates.png" alt="证书" /></p>
+
+<p>这个是 Server Key Exchange，可以看到协商了一种加密算法：</p>
+
+<p><img src="/images/ssl/key_exchange.png" alt="加密算法" /></p>
+
+<p>这个是 Server Hello Done：</p>
+
+<p><img src="/images/ssl/server_done.png" alt="server done" /></p>
+
+<ol>
+  <li>Client Finish</li>
+</ol>
+
+<p><img src="/images/ssl/client_finish.png" alt="client finish" /></p>
+
+<p>客户端发送一个 Client Key Exchange，Change Cipher Spec 和 Finished 报文</p>
+
+<p>Finished Verify Data 包括至此连接的所有报文的校验信息，用服务端提供的公钥加密</p>
+
+<p>客户端准备好切换为对称密钥加密</p>
+
+<ol>
+  <li>Server Finish</li>
+</ol>
+
+<p><img src="/images/ssl/server_finish.png" alt="server finish" /></p>
+
+<p>最后服务端返回一个 Change Cipher Spec 和 Server Finish</p>
+
+<p>服务端准备好切换为对称密钥加密</p>
+
+<ol>
+  <li>TLS 握手成功</li>
+</ol>
+
+<p>至此，TLS 握手成功，在 wireshark 中就可以看到接下来就是 HTTP 的请求响应封包了：</p>
+
+<p><img src="/images/ssl/handle_finish.png" alt="握手成功" /></p>
+
+<h2 id="四使用ssllabs对域名进行分析">四、使用ssllabs对域名进行分析</h2>
+
+<p>可以直接访问<a href="https://www.ssllabs.com/ssltest/analyze.html">ssllabs</a>对域名证书进行检测</p>
+
+<p><img src="/images/ssl/ssllabs-01.png" alt="ssllabs首页" /></p>
+
+<p>在Hostname处输入域名，最好勾选Do not show the results on the boards</p>
+
+<p>然后等待几分钟后，可以得到检测结果</p>
+
+<p><img src="/images/ssl/ssllabs-02.png" alt="检测结果" /></p>
+
+<ul>
+  <li>
+    <p>Summary</p>
+
+    <p>检测的综合结果</p>
+  </li>
+  <li>
+    <p>Certificate</p>
+
+    <p>证书的信息</p>
+  </li>
+</ul>
+
+<ol>
+  <li>Server Key and Certificate</li>
+</ol>
+
+<p>| 名称 | 含义 |
+  | —  | —  |
+  | Valid from | 证书有效期开始时间 |
+  | Valid until | 证书有效期结束时间 |
+  | Issuer | 颁发机构 |
+  | Signature algorithm | 证书签名算法 |
+  | Trusted | 证书是否被信任 |</p>
+<ol>
+  <li>Additional Certificates</li>
+</ol>
+
+<table>
+  <thead>
+    <tr>
+      <th>名称</th>
+      <th>含义</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Subject</td>
+      <td>子机构</td>
+    </tr>
+    <tr>
+      <td>Issuer</td>
+      <td>root CA机构</td>
+    </tr>
+    <tr>
+      <td>Valid until</td>
+      <td>有效期结束时间</td>
+    </tr>
+  </tbody>
+</table>
+
+<ul>
+  <li>Configuration</li>
+</ul>
+
+<ol>
+  <li>
+    <p>Protocols</p>
+
+    <p>支持哪些协议</p>
+  </li>
+  <li>
+    <p>Cipher Suites</p>
+
+    <p>支持哪些加密组合</p>
+  </li>
+  <li>
+    <p>Handshake Simulation</p>
+
+    <p>各个平台握手协议的模拟。当出现某端请求异常时， 可以着重关注一下本处</p>
+  </li>
+</ol>
+
+<h2 id="五ssltls异常处理思路">五、SSL/TLS异常处理思路</h2>
+
+<p>TLS层面的问题在客户端的症状表现上有相似之处，但是问题的根因却大相径庭。基本的排查思路如下：</p>
+
+<ol>
+  <li>
+    <p>判断问题是否属于TLS/SSL层面的问题。</p>
+  </li>
+  <li>
+    <p>抓取网络包；有条件的情况下，可以针对正常和异常情况抓取两份网络包，以便后续进行对比分析。</p>
+  </li>
+  <li>
+    <p>根据网络包探寻问题发生的直接原因，进而进一步探究问题的根本原因。</p>
+  </li>
+  <li>
+    <p>根据分析结论并结合业务场景，选择合适的解决方案。</p>
+  </li>
+</ol>
+
+<p>具体案例可以参考<a href="https://developer.aliyun.com/article/771516">阿里云客户端证书错误避坑指南</a>提供一定思路</p>
+
+:ET

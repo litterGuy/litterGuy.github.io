@@ -1,0 +1,124 @@
+I"�<p>目前尚需详细查看内容：</p>
+
+<ul>
+  <li>
+    <p>闭包：函数外部的变量引用</p>
+
+    <blockquote>
+      <p>闭包通过引用的方式使用外部函数的变量。</p>
+    </blockquote>
+  </li>
+  <li>隐式接口</li>
+  <li>
+    <p>io操作</p>
+
+    <blockquote>
+      <p>关于 PipeReader.Read
+方法的说明：从管道中读取数据。该方法会堵塞，直到管道写入端开始写入数据或写入端被关闭。如果写入端关闭时带有 error（即调用
+CloseWithError 关闭），该Read返回的 err 就是写入端传递的error；否则 err 为 EOF。</p>
+
+      <p>关于 PipeWriter.Write 方法的说明：写数据到管道中。该方法会堵塞，直到管道读取端读完所有数据或读取端被关闭。如果读取端关闭时带有 error（即调用
+CloseWithError 关闭），该Write返回的 err 就是读取端传递的error；否则 err 为 ErrClosedPipe。</p>
+    </blockquote>
+  </li>
+  <li>image操作</li>
+  <li>
+    <p>并行</p>
+
+    <blockquote>
+      <p>不要通过共享内存来通信，而应通过通信来共享内存。</p>
+    </blockquote>
+  </li>
+  <li>select操作
+    <blockquote>
+      <p>1、除 default 外，如果只有一个 case 语句评估通过，那么就执行这个case里的语句；
+2、除 default 外，如果有多个 case 语句评估通过，那么通过伪随机的方式随机选一个；
+3、如果 default 外的 case 语句都没有通过评估，那么执行 default 里的语句；
+4、如果没有 default，那么 代码块会被阻塞，指导有一个 case 通过评估；否则一直阻塞</p>
+    </blockquote>
+  </li>
+  <li>
+    <p><strong>test测试</strong></p>
+
+    <blockquote>
+      <p>1、测试源码文件是名称以“_test.go”为后缀的
+2、测试函数一般是以“Test”为名称前缀并有一个类型为“testing.T”的参数声明的函数
+func TestXxx(*testing.T)
+注意：Xxx 可以是任何字母数字字符串，但是第一个字母不能是小些字母。</p>
+    </blockquote>
+  </li>
+  <li>fmt 字符格式化操作</li>
+  <li>类型断言</li>
+  <li>happens-before</li>
+</ul>
+
+<hr />
+
+<blockquote>
+  <p>Go程具有简单的模型：它是与其它Go程并发运行在同一地址空间的函数。它是轻量级的，
+所有小号几乎就只有栈空间的分配。而且栈最开始是非常小的，所以它们很廉价， 仅在需要时才会随着堆空间的分配（和释放）而变化。</p>
+</blockquote>
+
+<blockquote>
+  <p>并发是用可独立执行的组件构造程序的方法， 而并行则是为了效率在多CPU上平行地进行计算</p>
+</blockquote>
+
+<blockquote>
+  <p>可能泄露的缓冲区</p>
+
+  <p>当 panic 被调用后（包括不明确的运行时错误，例如切片检索越界或类型断言失败），
+程序将立刻终止当前函数的执行，并开始回溯Go程的栈，运行任何被推迟的函数。 若回溯到达Go程栈的顶端，程序就会终止。不过我们可以用内建的
+recover 函数来重新或来取回Go程的控制权限并使其恢复正常执行。</p>
+
+  <p>调用 recover 将停止回溯过程，并返回传入 panic 的实参。 由于在回溯时只有被推迟函数中的代码在运行，因此 recover
+只能在被推迟的函数中才有效。</p>
+
+  <p>recover 的一个应用就是在服务器中终止失败的Go程而无需杀死其它正在执行的Go程。</p>
+</blockquote>
+
+<blockquote>
+  <p>若包 p 导入了包 q，则 q 的 init 函数会在 p 的任何函数启动前完成。 函数 main.main 会在所有的 init
+函数结束后启动。</p>
+</blockquote>
+
+<blockquote>
+  <p>go 语句会在当前Go程开始执行前启动新的Go程。
+信道上的发送操作总在对应的接收操作完成前发生。
+若在信道关闭后从中接收数据，接收者就会收到该信道返回的零值。
+<strong>从无缓冲信道进行的接收，要发生在对该信道进行的发送完成之前。</strong></p>
+</blockquote>
+
+<p>锁</p>
+
+<blockquote>
+  <p>sync 包实现了两种锁的数据类型：sync.Mutex 和 sync.RWMutex。</p>
+
+  <p>对于任何 sync.Mutex 或 sync.RWMutex 类型的变量 l 以及 n &lt; m ，对 l.Unlock() 的第 n
+次调用在对 l.Lock() 的第 m 次调用返回前发生。
+通过 once.Do(f) 对 f() 的单次调用在对任何其它的 once.Do(f) 调用返回之前发生（返回）</p>
+
+  <p><strong>Go的内存模型描述的是”在一个groutine中对变量进行读操作能够侦测到在其他goroutine中对该变量的写操作”的条件。</strong></p>
+</blockquote>
+
+<p><strong><em>关于channel的happens-before在Go的内存模型中提到了三种情况：</em></strong></p>
+
+<blockquote>
+  <ol>
+    <li>对一个channel的发送操作happens-before 相应channel的接收操作完成</li>
+    <li>关闭一个channel happens-before从该Channel接收到最后的返回值0</li>
+    <li>不带缓冲的channel的接收操作 happens-before 相应channel的发送操作完成</li>
+  </ol>
+</blockquote>
+
+<p>内存管理：<a href="https://tiancaiamao.gitbooks.io/go-internals/content/zh/06.1.html">详见</a></p>
+
+<hr />
+<p>DB</p>
+
+<blockquote>
+  <p>连接池的工作方式：当调用一个函数，需要访问数据库时，该函数会请求从连接池中获取一个连接，如果连接池中存在一个空闲连接，它会将该空闲连接给该函数；否则，会打开一个新的连接。当该函数结束时，该连接要么返回给连接池，要么传递个某个需要该连接的对象，知道该对象完成时，连接才会返回给连接池。</p>
+</blockquote>
+
+<hr />
+<p>WaitGroup的用途：它能够一直等到所有的goroutine执行完成，并且阻塞主线程的执行，直到所有的goroutine执行完成。</p>
+:ET
