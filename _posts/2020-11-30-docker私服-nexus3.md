@@ -15,11 +15,9 @@ tags:
 # 启动 Nexus 容器
 
 ```
-docker run -d --name nexus3 --restart=always \
-    -p 8081:8081 \
-    --mount src=nexus-data,target=/nexus-data \
-    sonatype/nexus3
+docker run -d --name nexus3 --restart=always -p 8081:8081 -p 8082:8082 --mount src=nexus-data,target=/nexus-data sonatype/nexus3
 ```
+
 等待 3-5 分钟，如果 nexus3 容器没有异常退出，那么你可以使用浏览器打开 http://YourIP:8081 访问 Nexus 了。
 
 第一次启动 Nexus 的默认帐号是 admin 密码是 admin123 登录以后点击页面上方的齿轮按钮进行设置。
