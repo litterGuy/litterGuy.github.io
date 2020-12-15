@@ -76,4 +76,14 @@ Hosted -> Deployment pollcy: 请选择 Allow redeploy 否则无法上传 Docker 
   docker push 192.168.59.1:8551/freud:latest
   ```
 
+# 删除镜像
+>nexus3 docker私服在使用过程中，通过nexus3管理界面，删除了一些镜像之后，其实底层的存储（linux操作系统，或者是其他存储），并没有释放
+>
+>实际物理磁盘并没有释放出来，是因为在后台只是被标记为deletion，就好比你用delete语句删除mysql中的条目时，磁盘空间不会释放出来一样
+
+需要进行两部操作：
+1. 转到WebUI->任务->创建-> Docker - Delete unused manifests and images
+
+2. 进行另一项工作，Admin - Compact blob store以实际rm从Nexus目录中的文件
+
 [01]: /images/docker/nexus01.png
