@@ -1,6 +1,6 @@
 # Jekyll-Pithy
 
-Jekyll-Pithy is a theme for Jekyll. Here is [my blog](http://wenva.github.io) which use this theme.
+Jekyll-Pithy is a theme for Jekyll. Here is [my blog](http://litterGuy.github.io) which use this theme.
 
 ![image](https://raw.githubusercontent.com/smallmuou/Jekyll-Pithy/master/images/Jekyll-Pithy.png)
 
