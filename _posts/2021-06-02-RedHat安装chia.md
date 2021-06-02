@@ -98,3 +98,20 @@ chia start wallet
 ```
 chia show -s
 ```
+
+## 查看钱包
+```
+chia wallet show
+```
+
+第一次执行该命令会出现以下交互
+
+```
+No online backup file found, 
+ Press S to skip restore from backup 
+ Press F to use your own backup file:
+```
+
+> 根据需求选择
+>
+> 不执行该命令，钱包不会同步节点
