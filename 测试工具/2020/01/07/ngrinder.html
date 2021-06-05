@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>ngrinder</title>
+  <meta name="description" content="1、下载在https://github.com/naver/ngrinder/releases选择合适版本下载">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7/2020/01/07/ngrinder.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">ngrinder</h1>
+    <p class="post-meta">2020-01-07</p>
+  </header>
+
+  <article class="post-content">
+    <p>1、下载
+在<a href="https://github.com/naver/ngrinder/releases">https://github.com/naver/ngrinder/releases</a>选择合适版本下载</p>
+
+<blockquote>
+  <p>wget
+https://github.com/naver/ngrinder/releases/download/ngrinder-3.4.3-20190709/ngrinder-controller-3.4.3.war</p>
+</blockquote>
+
+<p>2、启动</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nohup java -XX:MaxMetaspaceSize=512m -jar /root/ngrinder/ngrinder-controller-3.4.3.war --port 8080 &lt; /dev/null &amp;
+</code></pre></div></div>
+
+<p>3、启动后被解压到~/.ngrinder/下， 日志查看等可到该处查看</p>
+
+<p>4、登陆</p>
+
+<blockquote>
+  <p>账号密码默认 admin admin</p>
+</blockquote>
+
+<hr />
+
+<p>5、点击下载代理（可部署到多台机器）
+    <img src="https://bitbucket-assetroot.s3.amazonaws.com/repository/AqzM76/1175392996-%E6%8D%95%E8%8E%B7.JPG?AWSAccessKeyId=AKIAIQWXW6WLXMB5QZAQ&amp;Expires=1573806930&amp;Signature=oUQaPQK5EjJ4xXmWfOjSv/YPlsI=" alt="此处输入图片的描述" />
+6、解压执行</p>
+
+<blockquote>
+  <p>tar xvf ngrinder-agent-3.4.3-192.168.0.11.tar 
+/root/.ngrinder/download/ngrinder-agent/run_agent_bg.sh</p>
+</blockquote>
+
+<p>7、可在agent.conf文件中修改连接地址</p>
+
+<blockquote>
+  <p>agent.controller_host=192.168.0.11</p>
+</blockquote>
+
+<p>8、下载监控
+【】
+9、解压执行</p>
+<blockquote>
+  <p>tar xvf ngrinder-monitor-3.4.3.tar 
+/root/.ngrinder/download/ngrinder-monitor/run_monitor_bg.sh</p>
+</blockquote>
+
+<hr />
+<p>安装参照：<a href="https://github.com/naver/ngrinder/wiki/Installation-Guide">安装教程</a></p>
+
+<hr />
+<p><strong>搭建本地环境</strong></p>
+
+<p>1、下载源码</p>
+
+<blockquote>
+  <p>git clone https://github.com/naver/ngrinder.git</p>
+</blockquote>
+
+<p>2、导入idea后，在父类的pom.xml文件中添加repository（因为有几个包有问题，没有发布在中央仓库）</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;repositories&gt;
+    &lt;repository&gt;
+			&lt;id&gt;ngrinder-core&lt;/id&gt;
+			&lt;url&gt;https://github.com/nhnopensource/nhnopensource.maven.repo/raw/master/releases&lt;/url&gt;
+	&lt;/repository&gt;
+&lt;/repositories&gt;
+</code></pre></div></div>
+
+<p>ps：如果下载有问题，可以挂上vpn进行操作。</p>
+
+<p>3、修改项目的jdk版本，设置为1.8.X</p>
+
+<hr />
+
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7/2020/01/07/ngrinder data-title=ngrinder data-url=随笔杂记//%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7/2020/01/07/ngrinder.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>Error: export ordinal too large after upgrading to Go 1.15</title>
+  <meta name="description" content="Error: export ordinal too large after upgrading to Go 1.15">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/go/2021/04/07/go1.15bug_export_ordinal_too_large.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">Error: export ordinal too large after upgrading to Go 1.15</h1>
+    <p class="post-meta">2021-04-07</p>
+  </header>
+
+  <article class="post-content">
+    <h1 id="error-export-ordinal-too-large-after-upgrading-to-go-115">Error: export ordinal too large after upgrading to Go 1.15</h1>
+
+<p>当debug启动应用时，出现了以下错误</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>x86_64-w64-mingw32/bin/ld.exe: Error: export ordinal too large: 77173
+</code></pre></div></div>
+
+<p>经过查找，这属于go 1.15版本特有的问题</p>
+
+<p>解决途径有二：</p>
+
+<ol>
+  <li>启动时增加
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-buildmode=exe
+</code></pre></div>    </div>
+  </li>
+  <li>升级golang的sdk</li>
+</ol>
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/go/2021/04/07/go1.15bug_export_ordinal_too_large data-title=Error: export ordinal too large after upgrading to Go 1.15 data-url=随笔杂记//go/2021/04/07/go1.15bug_export_ordinal_too_large.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

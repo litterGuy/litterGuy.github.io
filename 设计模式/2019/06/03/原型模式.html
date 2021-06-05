@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>原型模式</title>
+  <meta name="description" content="原型模式（Prototype Pattern）是用于创建重复的对象，同时又能保证性能。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。这种模式是实现了一个原型接口，该接口用于创建当前对象的克隆。当直接创建对象的代价比较大时，则采用这种模式。">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/2019/06/03/%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8F.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">原型模式</h1>
+    <p class="post-meta">2019-06-03</p>
+  </header>
+
+  <article class="post-content">
+    <p>原型模式（Prototype Pattern）是用于创建重复的对象，同时又能保证性能。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。
+这种模式是实现了一个原型接口，该接口用于创建当前对象的克隆。当直接创建对象的代价比较大时，则采用这种模式。</p>
+
+<hr />
+
+<p>原型模式中有三个登场角色：</p>
+
+<p>原型角色：定义用于复制现有实例来生成新实例的方法；</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 以贴主示例代码为例  
+implements Cloneable   // 1.（抽象类或者接口）实现 java.lang.Cloneable 接口
+public Shape clone();  // 2.定义复制现有实例来生成新实例的方法
+</code></pre></div></div>
+
+<p>具体原型角色：实现用于复制现有实例来生成新实例的方法</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public Shape clone() {// 2.实现复制现有实例来生成新实例的方法（也可以由超类完成）
+    Shape clone = null;
+    try {
+        clone = (Shape) clone();
+    } catch (CloneNotSupportedException e) {
+        e.printStackTrace();
+    }
+    return clone;
+}
+</code></pre></div></div>
+
+<p>使用者角色：维护一个注册表，并提供一个找出正确实例原型的方法。最后，提供一个获取新实例的方法，用来委托复制实例的方法生成新实例。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>private static Hashtable&lt;String, Shape&gt; shapeMap = new Hashtable&lt;String, Shape&gt;();//维护一个注册表
+    public static void loadCache() {
+    Circle circle = new Circle();
+    circle.setId("1");
+    shapeMap.put(circle.getId(),circle);
+
+    Square square = new Square();
+    square.setId("2");
+    shapeMap.put(square.getId(),square);
+
+    Rectangle rectangle = new Rectangle();
+    rectangle.setId("3");
+    shapeMap.put(rectangle.getId(),rectangle);
+}
+public static Shape getShape(String shapeId) {//提供一个获取新实例的方法
+    Shape cachedShape = shapeMap.get(shapeId);//提供一个找出正确实例原型的方法
+    return (Shape) cachedShape.clone();//委托复制实例的方法生成新实例。
+}
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>当我们创建一个类的实例的过程很复杂，并且我们需要创建多个这样类的实例时，如果我们用new操作符去创建这样的类实例，这未免会增加创建类的复杂度和耗费更多的内存空间，因为这样在内存中分配了多个一样的类实例对象，然后如果采用工厂模式来创建这样的系统的话，随着产品类的不断增加，导致子类的数量不断增多，反而增加了系统复杂程度，所以在这里使用工厂模式来封装类创建过程并不合适，然而原型模式可以很好地解决这个问题，因为每个类实例都是相同的，当我们需要多个相同的类实例时，没必要每次都使用new运算符去创建相同的类实例对象，此时我们一般思路就是想——只创建一个类实例对象，如果后面需要更多这样的实例，可以通过对原来对象拷贝一份来完成创建，这样在内存中不需要创建多个相同的类实例，从而减少内存的消耗和达到类实例的复用。 
+</code></pre></div></div>
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/2019/06/03/原型模式 data-title=原型模式 data-url=随笔杂记//%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/2019/06/03/%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8F.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

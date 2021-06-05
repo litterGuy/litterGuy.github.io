@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>模板模式</title>
+  <meta name="description" content="在模板模式（Template Pattern）中，一个抽象类公开定义了执行它的方法的方式/模板。它的子类可以按需要重写方法实现，但调用将以抽象类中定义的方式进行。这种类型的设计模式属于行为型模式。">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/2019/06/10/%E6%A8%A1%E6%9D%BF%E6%A8%A1%E5%BC%8F.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">模板模式</h1>
+    <p class="post-meta">2019-06-10</p>
+  </header>
+
+  <article class="post-content">
+    <p>在模板模式（Template Pattern）中，一个抽象类公开定义了执行它的方法的方式/模板。它的子类可以按需要重写方法实现，但调用将以抽象类中定义的方式进行。这种类型的设计模式属于行为型模式。</p>
+
+<p>注意事项：为防止恶意操作，一般模板方法都加上 final 关键词。</p>
+
+<hr />
+
+<p>示例如下：
+<img src="https://www.runoob.com/wp-content/uploads/2014/08/template_pattern_uml_diagram.jpg" alt="此处输入图片的描述" /></p>
+
+<ol>
+  <li>
+    <p>创建一个抽象类，它的模板方法被设置为 final。</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> public abstract class Game {
+    abstract void initialize();
+    abstract void startPlay();
+    abstract void endPlay();
+     
+    //模板
+    public final void play(){
+     
+       //初始化游戏
+       initialize();
+     
+       //开始游戏
+       startPlay();
+     
+       //结束游戏
+       endPlay();
+    }
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>创建扩展了上述类的实体类。</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> public class Cricket extends Game {
+     
+    @Override
+    void endPlay() {
+       System.out.println("Cricket Game Finished!");
+    }
+     
+    @Override
+    void initialize() {
+       System.out.println("Cricket Game Initialized! Start playing.");
+    }
+     
+    @Override
+    void startPlay() {
+       System.out.println("Cricket Game Started. Enjoy the game!");
+    }
+ }
+</code></pre></div>    </div>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> public class Football extends Game {
+     
+    @Override
+    void endPlay() {
+       System.out.println("Football Game Finished!");
+    }
+     
+    @Override
+    void initialize() {
+       System.out.println("Football Game Initialized! Start playing.");
+    }
+     
+    @Override
+    void startPlay() {
+       System.out.println("Football Game Started. Enjoy the game!");
+    }
+ }
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>使用 Game 的模板方法 play() 来演示游戏的定义方式。</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> public class TemplatePatternDemo {
+    public static void main(String[] args) {
+     
+       Game game = new Cricket();
+       game.play();
+       System.out.println();
+       game = new Football();
+       game.play();      
+    }
+ }
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/2019/06/10/模板模式 data-title=模板模式 data-url=随笔杂记//%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/2019/06/10/%E6%A8%A1%E6%9D%BF%E6%A8%A1%E5%BC%8F.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

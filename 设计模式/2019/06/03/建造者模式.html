@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>建造者模式</title>
+  <meta name="description" content="建造者模式（Builder Pattern）使用多个简单的对象一步一步构建成一个复杂的对象。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 一个 Builder 类会一步一步构造最终的对象。该 Builder类是独立于其他对象的。">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/2019/06/03/%E5%BB%BA%E9%80%A0%E8%80%85%E6%A8%A1%E5%BC%8F.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">建造者模式</h1>
+    <p class="post-meta">2019-06-03</p>
+  </header>
+
+  <article class="post-content">
+    <p>建造者模式（Builder Pattern）使用多个简单的对象一步一步构建成一个复杂的对象。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 一个 Builder 类会一步一步构造最终的对象。该 Builder类是独立于其他对象的。</p>
+
+<hr />
+
+<p>三个角色：建造者、具体的建造者、监工、使用者（严格来说不算）</p>
+
+<ul>
+  <li>建造者角色：定义生成实例所需要的所有方法；</li>
+  <li>具体的建造者角色：实现生成实例所需要的所有方法，并且定义获取最终生成实例的方法；</li>
+  <li>监工角色：定义使用建造者角色中的方法来生成实例的方法；</li>
+  <li>
+    <p>使用者：使用建造者模式。</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 注意：定义中“将一个复杂的构建过程与其表示相分离”，表示并不是由建造者负责一切，而是由监工负责控制（定义）一个复杂的构建过程，由各个不同的建造者分别负责实现构建过程中所用到的所有构建步骤。不然，就无法做到“使得同样的构建过程可以创建不同的表示”这一目标。
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<p>建造者角色：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public abstract class Builder {
+    public abstract void buildPart1();
+    public abstract void buildPart2();
+    public abstract void buildPart3();
+}
+</code></pre></div></div>
+<p>监工角色：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class Director {    // 将一个复杂的构建过程与其表示相分离
+    private Builder builder;    // 针对接口编程，而不是针对实现编程
+    public Director(Builder builder) {
+        this.builder = builder;
+    }
+    public void setBuilder(Builder builder) {
+        this.builder = builder;
+    }
+
+    public void construct() {   // 控制（定义）一个复杂的构建过程
+        builder.buildPart1();
+        for (int i = 0; i &lt; 5; i++) {   // 提示：如果想在运行过程中替换构建算法，可以考虑结合策略模式。
+            builder.buildPart2();
+        }
+        builder.buildPart3();
+    }
+}
+</code></pre></div></div>
+<p>具体的建造者角色：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/**
+ * 此处实现了建造纯文本文档的具体建造者。
+ * 可以考虑再实现一个建造HTML文档、XML文档，或者其它什么文档的具体建造者。
+ * 这样，就可以使得同样的构建过程可以创建不同的表示
+ */
+public class ConcreteBuilder1 extends Builder {
+  private StringBuffer buffer = new StringBuffer();//假设 buffer.toString() 就是最终生成的产品
+
+    @Override
+    public void buildPart1() {//实现构建最终实例需要的所有方法
+        buffer.append("Builder1 : Part1\n");
+    }
+
+    @Override
+    public void buildPart2() {
+        buffer.append("Builder1 : Part2\n");
+    }
+
+    @Override
+    public void buildPart3() {
+        buffer.append("Builder1 : Part3\n");
+    }
+    
+    public String getResult() {//定义获取最终生成实例的方法
+        return buffer.toString();
+    }
+}
+</code></pre></div></div>
+
+<p>客户角色：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class Client {
+    public void testBuilderPattern() {
+        ConcreteBuilder1 b1 = new ConcreteBuilder1();//建造者
+        Director director = new Director(b1);//监工
+        director.construct();//建造实例(监工负责监督，建造者实际建造)
+        String result = b1.getResult();//获取最终生成结果
+        System.out.printf("the result is :%n%s", result);
+    }
+}
+</code></pre></div></div>
+
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/2019/06/03/建造者模式 data-title=建造者模式 data-url=随笔杂记//%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/2019/06/03/%E5%BB%BA%E9%80%A0%E8%80%85%E6%A8%A1%E5%BC%8F.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

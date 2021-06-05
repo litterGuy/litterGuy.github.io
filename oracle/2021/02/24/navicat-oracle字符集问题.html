@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>navicat oracle字符集问题</title>
+  <meta name="description" content="navicat oracle字符集问题">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/oracle/2021/02/24/navicat-oracle%E5%AD%97%E7%AC%A6%E9%9B%86%E9%97%AE%E9%A2%98.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">navicat oracle字符集问题</h1>
+    <p class="post-meta">2021-02-24</p>
+  </header>
+
+  <article class="post-content">
+    <h1 id="navicat-oracle字符集问题">navicat oracle字符集问题</h1>
+
+<p>修改oracle字符集为utf8后，navicat连接oracle失败并报了以下错误:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>connection to server failed, probable Oracle Net admin error
+</code></pre></div></div>
+
+<p>查找原因发现如下解释：</p>
+
+<blockquote>
+  <p>Oracle的客户端分为两种，一种是标准版，一种是简洁版</p>
+
+  <p>Navicat连接oracle使用的是自身安装时携带的简洁版客户端。</p>
+
+  <p>而简洁版不支持utf8字符集</p>
+</blockquote>
+
+<p>故去官网下载标准版客户端,地址：https://www.oracle.com/database/technologies/instant-client/microsoft-windows-32-downloads.html</p>
+
+<p>下载后解压，下一步准备替换navicat的客户端</p>
+
+<ol>
+  <li>Navicat中配置一下，选择工具-选项</li>
+</ol>
+
+<p><img src="/images/oracle/oracle.png" alt="选项" /></p>
+
+<ol>
+  <li>选择驱动</li>
+</ol>
+
+<p><img src="/images/oracle/oracle1.png" alt="替换oci" /></p>
+
+<ol>
+  <li>重启Navicat生效</li>
+</ol>
+
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/oracle/2021/02/24/navicat oracle字符集问题 data-title=navicat oracle字符集问题 data-url=随笔杂记//oracle/2021/02/24/navicat-oracle%E5%AD%97%E7%AC%A6%E9%9B%86%E9%97%AE%E9%A2%98.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

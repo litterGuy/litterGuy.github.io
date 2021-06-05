@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>Red Hat下chia安装和启动</title>
+  <meta name="description" content="更新库，安装python">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/%E8%8A%82%E7%82%B9/2021/06/02/RedHat%E5%AE%89%E8%A3%85chia.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">Red Hat下chia安装和启动</h1>
+    <p class="post-meta">2021-06-02</p>
+  </header>
+
+  <article class="post-content">
+    <h1 id="更新库安装python">更新库，安装python</h1>
+
+<blockquote>
+  <p>前几步按照官方提供命令，没有出现什么问题</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo yum install epel-release -y
+sudo yum update -y
+
+# Compiling python 3.7 is generally required on CentOS 7.7 and newer
+sudo yum install gcc openssl-devel bzip2-devel zlib-devel libffi libffi-devel -y
+sudo yum install libsqlite3x-devel -y
+# possible that on some RHEL based you also need to install
+sudo yum groupinstall "Development Tools" -y
+sudo yum install python3-devel gmp-devel  boost-devel libsodium-devel -y
+
+sudo yum install wget -y
+sudo wget https://www.python.org/ftp/python/3.7.7/Python-3.7.7.tgz
+sudo tar -zxvf Python-3.7.7.tgz ; cd Python-3.7.7
+./configure --enable-optimizations; sudo make -j$(nproc) altinstall; cd ..
+
+# Download and install the source version
+git clone https://github.com/Chia-Network/chia-blockchain.git -b latest
+cd chia-blockchain
+</code></pre></div></div>
+
+<h3 id="修改pip配置文件没碰见问题可忽略">修改pip配置文件（没碰见问题可忽略）</h3>
+
+<blockquote>
+  <p>因为碰见section ‘global’ already exists错误</p>
+</blockquote>
+
+<p>修改/root/.pip/pip.conf文件</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[global]
+index-url=http://mirrors.aliyun.com/pypi/simple/
+extra-index-url=
+	https://pypi.tuna.tsinghua.edu.cn/simple
+
+[install]
+trusted-host=mirrors.aliyun.com
+</code></pre></div></div>
+
+<h2 id="编译chia">编译chia</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sh install.sh
+. ./activate
+</code></pre></div></div>
+
+<h3 id="设置系统默认python没碰见问题可忽略">设置系统默认python（没碰见问题可忽略）</h3>
+
+<blockquote>
+  <p>如上一步报错，类似：No matching distribution found for <strong>==</strong></p>
+
+  <p>可能为系统默认python不为python3.7需要修改</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python -V //查看版本号
+which python //确定使用的哪个
+</code></pre></div></div>
+
+<p>使用ln -s 创建软连,保证python python3.7都指向上几步安装的python3.7.7</p>
+
+<h2 id="生成钱包">生成钱包</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chia keys generate
+</code></pre></div></div>
+
+<h3 id="修改配置chia配置文件没碰见问题可忽略">修改配置chia配置文件（没碰见问题可忽略）</h3>
+
+<blockquote>
+  <p>启动钱包是如碰见以下错误 error while attempting to bind on address (‘::1’, 55400, 0, 0): cannot assign requested address</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vim ~/.chia/mainnet/config/config.yaml
+
+self_hostname: localhost
+替换成
+self_hostname: 127.0.0.1
+</code></pre></div></div>
+
+<h2 id="初始化钱包">初始化钱包</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chia init
+
+chia keys generate
+</code></pre></div></div>
+
+<h2 id="启动钱包和节点">启动钱包和节点</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chia start wallet
+</code></pre></div></div>
+
+<h2 id="查看同步情况">查看同步情况</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chia show -s
+</code></pre></div></div>
+
+<h2 id="查看钱包">查看钱包</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chia wallet show
+</code></pre></div></div>
+
+<p>第一次执行该命令会出现以下交互</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>No online backup file found, 
+ Press S to skip restore from backup 
+ Press F to use your own backup file:
+</code></pre></div></div>
+
+<blockquote>
+  <p>根据需求选择</p>
+
+  <p>不执行该命令，钱包不会同步节点</p>
+</blockquote>
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/%E8%8A%82%E7%82%B9/2021/06/02/RedHat安装chia data-title=Red Hat下chia安装和启动 data-url=随笔杂记//%E8%8A%82%E7%82%B9/2021/06/02/RedHat%E5%AE%89%E8%A3%85chia.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

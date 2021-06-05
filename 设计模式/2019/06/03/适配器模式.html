@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>适配器模式</title>
+  <meta name="description" content="适配器模式（Adapter Pattern）是作为两个不兼容的接口之间的桥梁。这种类型的设计模式属于结构型模式，它结合了两个独立接口的功能。">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/2019/06/03/%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">适配器模式</h1>
+    <p class="post-meta">2019-06-03</p>
+  </header>
+
+  <article class="post-content">
+    <p>适配器模式（Adapter Pattern）是作为两个不兼容的接口之间的桥梁。这种类型的设计模式属于结构型模式，它结合了两个独立接口的功能。</p>
+
+<p>这种模式涉及到一个单一的类，该类负责加入独立的或不兼容的接口功能。</p>
+
+<hr />
+
+<p>分享一个例子：笔记本通过读卡去读取TF卡
+一、先模拟计算机读取SD卡：</p>
+
+<ol>
+  <li>
+    <p>先创建一个SD卡的接口：</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public interface SDCard {
+    //读取SD卡方法
+    String readSD();
+    //写入SD卡功能
+    int writeSD(String msg);
+}
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>创建SD卡接口的实现类，模拟SD卡的功能：</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class SDCardImpl implements SDCard {
+    @Override    
+    public String readSD() {
+        String msg = "sdcard read a msg :hello word SD";
+        return msg;  
+    }
+    @Override  
+    public int writeSD(String msg) {      
+        System.out.println("sd card write msg : " + msg);    
+        return 1;   
+    }
+}
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>创建计算机接口，计算机提供读取SD卡方法：</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public interface Computer {    
+    String readSD(SDCard sdCard);
+}
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>创建一个计算机实例，实现计算机接口，并实现其读取SD卡方法：</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class ThinkpadComputer implements Computer {
+    @Override    
+    public String readSD(SDCard sdCard) {        
+        if(sdCard == null)throw new NullPointerException("sd card null");        
+        return sdCard.readSD();    
+    }
+}
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>这时候就可以模拟计算机读取SD卡功能：</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class ComputerReadDemo {    
+    public static void main(String[] args) {        
+        Computer computer = new ThinkpadComputer();        
+        SDCard sdCard = new SDCardImpl();       
+        System.out.println(computer.readSD(sdCard));    
+    }
+}
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<p>二、接下来在不改变计算机读取SD卡接口的情况下，通过适配器模式读取TF卡</p>
+
+<ol>
+  <li>
+    <p>创建TF卡接口：</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public interface TFCard {    
+    String readTF();    
+    int writeTF(String msg);
+}
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>创建TF卡实例：</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class TFCardImpl implements TFCard {    
+    @Override    
+    public String readTF() {        
+        String msg ="tf card reade msg : hello word tf card";        
+        return msg;    
+    }    
+    @Override    
+    public int writeTF(String msg) {        
+        System.out.println("tf card write a msg : " + msg);        
+        return 1;    
+    }
+}
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>创建SD适配TF （也可以说是SD兼容TF，相当于读卡器）：
+实现SDCard接口，并将要适配的对象作为适配器的属性引入。</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class SDAdapterTF implements SDCard {    
+    private TFCard tfCard;    
+    public SDAdapterTF(TFCard tfCard) {        
+        this.tfCard = tfCard;    
+    }    
+    @Override    
+    public String readSD() {        
+        System.out.println("adapter read tf card ");        
+        return tfCard.readTF();    
+    }    
+    @Override    
+    public int writeSD(String msg) {        
+        System.out.println("adapter write tf card");        
+        return tfCard.writeTF(msg);    
+    }
+}
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>通过上面的例子测试计算机通过SD读卡器读取TF卡：</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class ComputerReadDemo {    
+    public static void main(String[] args) {        
+        Computer computer = new ThinkpadComputer();        
+        SDCard sdCard = new SDCardImpl();        
+        System.out.println(computer.readSD(sdCard));        
+        System.out.println("====================================");        
+        TFCard tfCard = new TFCardImpl();        
+        SDCard tfCardAdapterSD = new SDAdapterTF(tfCard);        
+        System.out.println(computer.readSD(tfCardAdapterSD));    
+    }
+}
+</code></pre></div>    </div>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>在这种模式下，计算机并不需要知道具体是什么卡，只需要负责操作接口即可，具体操作的什么类，由适配器决定。
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/2019/06/03/适配器模式 data-title=适配器模式 data-url=随笔杂记//%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/2019/06/03/%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

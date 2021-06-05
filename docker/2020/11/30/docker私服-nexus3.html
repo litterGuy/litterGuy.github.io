@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>docker私服搭建-nexus3</title>
+  <meta name="description" content="Nexus 3">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/docker/2020/11/30/docker%E7%A7%81%E6%9C%8D-nexus3.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">docker私服搭建-nexus3</h1>
+    <p class="post-meta">2020-11-30</p>
+  </header>
+
+  <article class="post-content">
+    <h1 id="nexus-3">Nexus 3</h1>
+
+<p>使用 Docker 官方的 Registry 创建的仓库面临一些维护问题。比如某些镜像删除以后空间默认是不会回收的，需要一些命令去回收空间然后重启 Registry 程序。在企业中把内部的一些工具包放入 Nexus 中是比较常见的做法，最新版本 Nexus3.x 全面支持 Docker 的私有镜像。所以使用 Nexus3.x 一个软件来管理 Docker , Maven , Yum , PyPI 等是一个明智的选择。</p>
+
+<h1 id="启动-nexus-容器">启动 Nexus 容器</h1>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run -d --name nexus3 --restart=always -p 8081:8081 -p 8082:8082 --mount src=nexus-data,target=/nexus-data sonatype/nexus3
+</code></pre></div></div>
+
+<p>等待 3-5 分钟，如果 nexus3 容器没有异常退出，那么你可以使用浏览器打开 http://YourIP:8081 访问 Nexus 了。</p>
+
+<p>第一次启动 Nexus 的默认帐号是 admin 密码是 admin123 登录以后点击页面上方的齿轮按钮进行设置。</p>
+
+<h1 id="创建仓库">创建仓库</h1>
+
+<blockquote>
+  <p>在Nexus中Docker仓库被分为了三种</p>
+
+  <ul>
+    <li>hosted： 托管仓库 ，私有仓库，可以push和pull</li>
+    <li>proxy： 代理和缓存远程仓库 ，只能pull</li>
+    <li>group： 将多个proxy和hosted仓库添加到一个组，只访问一个组地址即可，只能pull</li>
+  </ul>
+</blockquote>
+
+<p><img src="/images/docker/nexus01.png" alt="nexus repository" /></p>
+
+<p>创建一个私有仓库的方法： Repository-&gt;Repositories 点击右边菜单 Create repository 选择 docker (hosted)</p>
+<ul>
+  <li>Name: 仓库的名称</li>
+  <li>HTTP: 仓库单独的访问端口</li>
+  <li>Enable Docker V1 API: 如果需要同时支持 V1 版本请勾选此项（不建议勾选）。
+Hosted -&gt; Deployment pollcy: 请选择 Allow redeploy 否则无法上传 Docker 镜像。</li>
+</ul>
+
+<p>其它的仓库创建方法请各位自己摸索，还可以创建一个 docker (proxy) 类型的仓库链接到 DockerHub 上。再创建一个 docker (group) 类型的仓库把刚才的 hosted 与 proxy 添加在一起。主机在访问的时候默认下载私有仓库中的镜像，如果没有将链接到 DockerHub 中下载并缓存到 Nexus 中。</p>
+
+<h1 id="添加访问权限">添加访问权限</h1>
+
+<p>菜单 Security-&gt;Realms 把 Docker Bearer Token Realm 移到右边的框中保存。</p>
+
+<p>添加用户规则：菜单 Security-&gt;Roles-&gt;Create role 在 Privlleges 选项搜索 docker 把相应的规则移动到右边的框中然后保存。</p>
+
+<p>添加用户：菜单 Security-&gt;Users-&gt;Create local user 在 Roles 选项中选中刚才创建的规则移动到右边的窗口保存。</p>
+
+<h1 id="docker配置">Docker配置</h1>
+
+<p>配置daemon.json
+其中192.168.59.1指安装Nexus的服务器地址</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#vi /etc/docker/daemon.json
+{
+  "insecure-registries": [
+    "192.168.59.1:8551",
+    "192.168.59.1:8552",
+    "192.168.59.1:8553"
+  ],
+  "disable-legacy-registry": true
+}
+</code></pre></div></div>
+
+<ul>
+  <li>重启Docker</li>
+  <li>
+    <p>Push镜像</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker tag hifreud 192.168.59.1:8551/freud:latest
+
+docker login -u admin -p admin123 192.168.59.1:8551
+
+docker push 192.168.59.1:8551/freud:latest
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h1 id="删除镜像">删除镜像</h1>
+<blockquote>
+  <p>nexus3 docker私服在使用过程中，通过nexus3管理界面，删除了一些镜像之后，其实底层的存储（linux操作系统，或者是其他存储），并没有释放</p>
+
+  <p>实际物理磁盘并没有释放出来，是因为在后台只是被标记为deletion，就好比你用delete语句删除mysql中的条目时，磁盘空间不会释放出来一样</p>
+</blockquote>
+
+<p>需要进行两部操作：</p>
+<ol>
+  <li>
+    <p>转到WebUI-&gt;任务-&gt;创建-&gt; Docker - Delete unused manifests and images</p>
+  </li>
+  <li>
+    <p>进行另一项工作，Admin - Compact blob store以实际rm从Nexus目录中的文件</p>
+  </li>
+</ol>
+
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/docker/2020/11/30/docker私服-nexus3 data-title=docker私服搭建-nexus3 data-url=随笔杂记//docker/2020/11/30/docker%E7%A7%81%E6%9C%8D-nexus3.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

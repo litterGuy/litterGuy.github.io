@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>nginx 301跳转https后post请求失效问题解决</title>
+  <meta name="description" content="app本地请求是http端口,后来升级https强制301跳转,设置如下server {    listen 80;    server name www.XXX.com;    rewrite ^/(.*)$   https://www.XXX.com/$1 permanent;}">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/nginx/2019/11/21/nginx-301%E8%B7%B3%E8%BD%AChttps%E5%90%8Epost%E8%AF%B7%E6%B1%82%E5%A4%B1%E6%95%88%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">nginx 301跳转https后post请求失效问题解决</h1>
+    <p class="post-meta">2019-11-21</p>
+  </header>
+
+  <article class="post-content">
+    <p>app本地请求是http端口,后来升级https强制301跳转,设置如下</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>server {
+    listen 80;
+    server name www.XXX.com;
+    rewrite ^/(.*)$   https://www.XXX.com/$1 permanent;
+}
+</code></pre></div></div>
+
+<p><strong>问题描述及原因
+强制把http请求跳转到https,结果发现App有部分的功能不能使用,因为App一共设置了4种请求方式,分别是GET,POST,DELETE和OPTIONS方式,设置301跳转后所有的请求方法都变成了GET方式,导致一些功能无法正常使用.</strong></p>
+
+<p>解决思路也很简单,所有GET请求直接301跳转不用管,非GET请求的用proxy_pass来转发,将参数传递给服务,nginx配置如下.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>server {
+    listen 80;
+    server_name  www.XXX.com;
+    location / {
+        if ($request_method ~ ^(POST|DELETE|OPTIONS)$) {
+            proxy_pass https://www.XXX.com;
+            break ;
+        }
+        rewrite ^/(.*)$   https://www.XXX.com/$1 permanent;
+    }
+ 
+}
+</code></pre></div></div>
+
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/nginx/2019/11/21/nginx 301跳转https后post请求失效问题解决 data-title=nginx 301跳转https后post请求失效问题解决 data-url=随笔杂记//nginx/2019/11/21/nginx-301%E8%B7%B3%E8%BD%AChttps%E5%90%8Epost%E8%AF%B7%E6%B1%82%E5%A4%B1%E6%95%88%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

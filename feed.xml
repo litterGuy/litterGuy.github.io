@@ -1,0 +1,648 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>常理</title>
+    <description>Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.
+</description>
+    <link>https://litterGuy.github.io/</link>
+    <atom:link href="https://litterGuy.github.io/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Sat, 05 Jun 2021 02:40:50 +0000</pubDate>
+    <lastBuildDate>Sat, 05 Jun 2021 02:40:50 +0000</lastBuildDate>
+    <generator>Jekyll v4.2.0</generator>
+    
+      <item>
+        <title>Red Hat下chia安装和启动</title>
+        <description>&lt;h1 id=&quot;更新库安装python&quot;&gt;更新库，安装python&lt;/h1&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;前几步按照官方提供命令，没有出现什么问题&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo yum install epel-release -y
+sudo yum update -y
+
+# Compiling python 3.7 is generally required on CentOS 7.7 and newer
+sudo yum install gcc openssl-devel bzip2-devel zlib-devel libffi libffi-devel -y
+sudo yum install libsqlite3x-devel -y
+# possible that on some RHEL based you also need to install
+sudo yum groupinstall &quot;Development Tools&quot; -y
+sudo yum install python3-devel gmp-devel  boost-devel libsodium-devel -y
+
+sudo yum install wget -y
+sudo wget https://www.python.org/ftp/python/3.7.7/Python-3.7.7.tgz
+sudo tar -zxvf Python-3.7.7.tgz ; cd Python-3.7.7
+./configure --enable-optimizations; sudo make -j$(nproc) altinstall; cd ..
+
+# Download and install the source version
+git clone https://github.com/Chia-Network/chia-blockchain.git -b latest
+cd chia-blockchain
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;修改pip配置文件没碰见问题可忽略&quot;&gt;修改pip配置文件（没碰见问题可忽略）&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;因为碰见section ‘global’ already exists错误&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;修改/root/.pip/pip.conf文件&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[global]
+index-url=http://mirrors.aliyun.com/pypi/simple/
+extra-index-url=
+	https://pypi.tuna.tsinghua.edu.cn/simple
+
+[install]
+trusted-host=mirrors.aliyun.com
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;编译chia&quot;&gt;编译chia&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sh install.sh
+. ./activate
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;设置系统默认python没碰见问题可忽略&quot;&gt;设置系统默认python（没碰见问题可忽略）&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;如上一步报错，类似：No matching distribution found for &lt;strong&gt;==&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;可能为系统默认python不为python3.7需要修改&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;python -V //查看版本号
+which python //确定使用的哪个
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;使用ln -s 创建软连,保证python python3.7都指向上几步安装的python3.7.7&lt;/p&gt;
+
+&lt;h2 id=&quot;生成钱包&quot;&gt;生成钱包&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;chia keys generate
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;修改配置chia配置文件没碰见问题可忽略&quot;&gt;修改配置chia配置文件（没碰见问题可忽略）&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;启动钱包是如碰见以下错误 error while attempting to bind on address (‘::1’, 55400, 0, 0): cannot assign requested address&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vim ~/.chia/mainnet/config/config.yaml
+
+self_hostname: localhost
+替换成
+self_hostname: 127.0.0.1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;初始化钱包&quot;&gt;初始化钱包&lt;/h2&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;chia init
+
+chia keys generate
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;启动钱包和节点&quot;&gt;启动钱包和节点&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;chia start wallet
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;查看同步情况&quot;&gt;查看同步情况&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;chia show -s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;查看钱包&quot;&gt;查看钱包&lt;/h2&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;chia wallet show
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;第一次执行该命令会出现以下交互&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;No online backup file found, 
+ Press S to skip restore from backup 
+ Press F to use your own backup file:
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;根据需求选择&lt;/p&gt;
+
+  &lt;p&gt;不执行该命令，钱包不会同步节点&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Wed, 02 Jun 2021 08:26:27 +0000</pubDate>
+        <link>https://litterGuy.github.io/%E8%8A%82%E7%82%B9/2021/06/02/RedHat%E5%AE%89%E8%A3%85chia.html</link>
+        <guid isPermaLink="true">https://litterGuy.github.io/%E8%8A%82%E7%82%B9/2021/06/02/RedHat%E5%AE%89%E8%A3%85chia.html</guid>
+        
+        <category>节点</category>
+        
+        
+        <category>节点</category>
+        
+      </item>
+    
+      <item>
+        <title>gomobile的使用</title>
+        <description>&lt;h1 id=&quot;gomobile的使用&quot;&gt;gomobile的使用&lt;/h1&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;谨记要打包android  sdk, 确保pc上安装了android sdk ndk,  要打包ios  sdk，确保pc上安装了xcode&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;安装go-mobile&quot;&gt;安装go mobile&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;go get golang.org/x/mobile/cmd/gomobile
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;android环境&quot;&gt;android环境&lt;/h2&gt;
+
+&lt;p&gt;建议使用android studio进行安装&lt;/p&gt;
+
+&lt;p&gt;下载完sdk、ndk以后记得设置环境变量&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;export ANDROID_HOME = ***
+export ANDROID_NDK_HOME = $ANDROID_HOME/***
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;设置完成后，可能会出现找不到ndk的情况。这时重启下机器试试&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;ios环境&quot;&gt;ios环境&lt;/h2&gt;
+
+&lt;p&gt;确保机器已经安装xcode&lt;/p&gt;
+
+&lt;h2 id=&quot;初始化go-mobile&quot;&gt;初始化go mobile&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;gomobile init
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;生成sdk&quot;&gt;生成sdk&lt;/h2&gt;
+
+&lt;p&gt;在对应的项目路径下执行&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;gomobile bind -target=android -v
+gomobile bind -target=ios -v
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;生成apk&quot;&gt;生成apk&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;gomobile build -target=android -v
+gomobile build -target=ios -v
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;注意问题&quot;&gt;注意问题&lt;/h2&gt;
+
+&lt;p&gt;在windows下打包aar时，出现&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;错误: 编码GBK的不可映射字符&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;原因大致如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/gomobile1.png&quot; alt=&quot;error info&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;可以设置java的编码然后执行bind命令&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;set JAVA_TOOL_OPTIONS=-Dfile.encoding=utf-8
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+</description>
+        <pubDate>Thu, 06 May 2021 16:23:50 +0000</pubDate>
+        <link>https://litterGuy.github.io/go/2021/05/06/gomobile%E7%9A%84%E4%BD%BF%E7%94%A8.html</link>
+        <guid isPermaLink="true">https://litterGuy.github.io/go/2021/05/06/gomobile%E7%9A%84%E4%BD%BF%E7%94%A8.html</guid>
+        
+        <category>go gomobile</category>
+        
+        
+        <category>go</category>
+        
+      </item>
+    
+      <item>
+        <title>Error: export ordinal too large after upgrading to Go 1.15</title>
+        <description>&lt;h1 id=&quot;error-export-ordinal-too-large-after-upgrading-to-go-115&quot;&gt;Error: export ordinal too large after upgrading to Go 1.15&lt;/h1&gt;
+
+&lt;p&gt;当debug启动应用时，出现了以下错误&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;x86_64-w64-mingw32/bin/ld.exe: Error: export ordinal too large: 77173
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;经过查找，这属于go 1.15版本特有的问题&lt;/p&gt;
+
+&lt;p&gt;解决途径有二：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;启动时增加
+    &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;-buildmode=exe
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;升级golang的sdk&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+        <pubDate>Wed, 07 Apr 2021 16:19:28 +0000</pubDate>
+        <link>https://litterGuy.github.io/go/2021/04/07/go1.15bug_export_ordinal_too_large.html</link>
+        <guid isPermaLink="true">https://litterGuy.github.io/go/2021/04/07/go1.15bug_export_ordinal_too_large.html</guid>
+        
+        <category>go</category>
+        
+        
+        <category>go</category>
+        
+      </item>
+    
+      <item>
+        <title>navicat oracle字符集问题</title>
+        <description>&lt;h1 id=&quot;navicat-oracle字符集问题&quot;&gt;navicat oracle字符集问题&lt;/h1&gt;
+
+&lt;p&gt;修改oracle字符集为utf8后，navicat连接oracle失败并报了以下错误:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;connection to server failed, probable Oracle Net admin error
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;查找原因发现如下解释：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Oracle的客户端分为两种，一种是标准版，一种是简洁版&lt;/p&gt;
+
+  &lt;p&gt;Navicat连接oracle使用的是自身安装时携带的简洁版客户端。&lt;/p&gt;
+
+  &lt;p&gt;而简洁版不支持utf8字符集&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;故去官网下载标准版客户端,地址：https://www.oracle.com/database/technologies/instant-client/microsoft-windows-32-downloads.html&lt;/p&gt;
+
+&lt;p&gt;下载后解压，下一步准备替换navicat的客户端&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Navicat中配置一下，选择工具-选项&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/oracle/oracle.png&quot; alt=&quot;选项&quot; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;选择驱动&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/oracle/oracle1.png&quot; alt=&quot;替换oci&quot; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;重启Navicat生效&lt;/li&gt;
+&lt;/ol&gt;
+
+</description>
+        <pubDate>Wed, 24 Feb 2021 11:20:53 +0000</pubDate>
+        <link>https://litterGuy.github.io/oracle/2021/02/24/navicat-oracle%E5%AD%97%E7%AC%A6%E9%9B%86%E9%97%AE%E9%A2%98.html</link>
+        <guid isPermaLink="true">https://litterGuy.github.io/oracle/2021/02/24/navicat-oracle%E5%AD%97%E7%AC%A6%E9%9B%86%E9%97%AE%E9%A2%98.html</guid>
+        
+        <category>oracle</category>
+        
+        <category>navicat</category>
+        
+        
+        <category>oracle</category>
+        
+      </item>
+    
+      <item>
+        <title>oracle字符集修改</title>
+        <description>&lt;h1 id=&quot;oracle字符集修改&quot;&gt;oracle字符集修改&lt;/h1&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;以dba身份登录，详细可查看上一篇文章&lt;a href=&quot;oracle在docker下安装配置.html&quot;&gt;oracle在docker下的安装配置&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;命令如下：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; select userenv('language') from dual;  //查看字符集
+
+ shutdown immediate;
+ startup mount;
+ alter system enable restricted session;
+ alter system set job_queue_processes=0;
+ alter system set aq_tm_processes=0;
+ alter database open;
+ alter database character set internal_use utf8;//改为utf-8
+ // alter database character set internal_use zhs16gbk; 改为gbk
+ shutdown immediate;
+ startup;
+
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Wed, 24 Feb 2021 11:12:40 +0000</pubDate>
+        <link>https://litterGuy.github.io/oracle/2021/02/24/oracle%E5%AD%97%E7%AC%A6%E9%9B%86%E4%BF%AE%E6%94%B9.html</link>
+        <guid isPermaLink="true">https://litterGuy.github.io/oracle/2021/02/24/oracle%E5%AD%97%E7%AC%A6%E9%9B%86%E4%BF%AE%E6%94%B9.html</guid>
+        
+        <category>oracle</category>
+        
+        <category>docker</category>
+        
+        
+        <category>oracle</category>
+        
+      </item>
+    
+      <item>
+        <title>oracle在docker下的安装配置</title>
+        <description>&lt;h1 id=&quot;oracle在docker下的安装配置&quot;&gt;oracle在docker下的安装配置&lt;/h1&gt;
+
+&lt;h2 id=&quot;安装&quot;&gt;安装&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;拉取镜像：使用的是truevoly/oracle-12c的镜像&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker pull truevoly/oracle-12c
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;启动&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run -p 1521:1521 --name oracle_12c -d --restart=always truevoly/oracle-12c
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;查看是否启动&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker ps -a
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;进入oracle&quot;&gt;进入oracle&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;通过以下命令进入容器&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker exec -it oracle_12c /bin/bash
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;oracle默认是安装在oracle用户下的&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;su oracle
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;找到sqlplus位置&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cd /u01/app/oracle/product/12.1.0/xe/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;登录&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;./sqlplus / as sysdba
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;修改dba密码&quot;&gt;修改dba密码&lt;/h2&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;alter user sys identified by newpassword;
+alter user system identified by newpassword;
+alter profile default limit PASSWORD_LIFE_TIME UNLIMITED [设置密码时效，可以不管]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;然后就可以通过dba帐号进行登陆了， 也可以使用工具进行登陆，默认SID :XE&lt;/p&gt;
+
+&lt;h2 id=&quot;创建用户授权&quot;&gt;创建用户授权&lt;/h2&gt;
+
+&lt;p&gt;一般给别人不可能给DBA帐号，所以必须为其创建帐号&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;create user xxx identified by password;&lt;/li&gt;
+  &lt;li&gt;创建后你会发现你不能登陆，是因为没有授权，所以需要授权登陆权限：grant create session to xxx&lt;/li&gt;
+  &lt;li&gt;登陆后你发现你没法建表、也没有表目录（使用管理工具的看不到你建的表的列表）等，还是权限不够，所以继续授权&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;grant create table,unlimited tablespace to xxx;
+grant select any table to xxx;
+GRANT UPDATE ANY TABLE,DROP ANY TABLE,INSERT ANY TABLE TO xxx
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Wed, 24 Feb 2021 10:54:41 +0000</pubDate>
+        <link>https://litterGuy.github.io/oracle/2021/02/24/oracle%E5%9C%A8docker%E4%B8%8B%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE.html</link>
+        <guid isPermaLink="true">https://litterGuy.github.io/oracle/2021/02/24/oracle%E5%9C%A8docker%E4%B8%8B%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE.html</guid>
+        
+        <category>oracle</category>
+        
+        <category>docker</category>
+        
+        
+        <category>oracle</category>
+        
+      </item>
+    
+      <item>
+        <title>protobuf学习使用</title>
+        <description>&lt;h1 id=&quot;protobuf学习使用&quot;&gt;protobuf学习使用&lt;/h1&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/protocolbuffers/protobuf/releases/tag/v3.14.0&quot;&gt;下载二进制包&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;解析后路径为环境变量&lt;/li&gt;
+  &lt;li&gt;确保go在环境变量path下，gopath最好也存在&lt;/li&gt;
+  &lt;li&gt;安装go需要使用的包&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;go get -u github.com/golang/protobuf/proto
+
+go get -u github.com/golang/protobuf/protoc-gen-go
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;可在&lt;a href=&quot;https://developers.google.com/protocol-buffers/docs/proto3&quot;&gt;官网&lt;/a&gt;查看具体的语法和使用方式&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;根据proto文件生成go文件时，报错 –go_out: protoc-gen-go: Plugin failed with status code 1.&lt;/p&gt;
+
+  &lt;p&gt;请确定以上几步都没有问题。（疏忽了第四步导致报了这个错)&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Thu, 18 Feb 2021 16:26:44 +0000</pubDate>
+        <link>https://litterGuy.github.io/go/2021/02/18/protobuf%E5%AD%A6%E4%B9%A0%E4%BD%BF%E7%94%A8.html</link>
+        <guid isPermaLink="true">https://litterGuy.github.io/go/2021/02/18/protobuf%E5%AD%A6%E4%B9%A0%E4%BD%BF%E7%94%A8.html</guid>
+        
+        <category>go</category>
+        
+        <category>protobuf</category>
+        
+        
+        <category>go</category>
+        
+      </item>
+    
+      <item>
+        <title>Error:Could not run Bazel info</title>
+        <description>&lt;h1 id=&quot;errorcould-not-run-bazel-info&quot;&gt;Error:Could not run Bazel info&lt;/h1&gt;
+
+&lt;p&gt;安装完Bazel插件后，sync 工程，结果出错了：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Error:Cannot run program &quot;bazel&quot; (in directory &quot;/xxx/xxx&quot;): error=2, No such file or directory
+Error:Could not run Bazel info
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;后续搜索，查找到相关解决办法&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;ol&gt;
+    &lt;li&gt;Navigate to Settings &amp;gt; Other Settings &amp;gt; Bazel Settings&lt;/li&gt;
+    &lt;li&gt;Update Bazel binary location to /usr/local/bin/bazel&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Bazel binary location 是缺省值,所以需要设置为本地的执行文件。&lt;/p&gt;
+
+&lt;p&gt;可在&lt;a href=&quot;https://github.com/bazelbuild/bazel/releases&quot;&gt;https://github.com/bazelbuild/bazel/releases&lt;/a&gt;下载对应系统的版本，然后指定Bazel binary location位置&lt;/p&gt;
+</description>
+        <pubDate>Tue, 15 Dec 2020 13:58:23 +0000</pubDate>
+        <link>https://litterGuy.github.io/android/2020/12/15/%E6%97%A0%E6%B3%95%E8%BF%90%E8%A1%8CBazel%E9%97%AE%E9%A2%98.html</link>
+        <guid isPermaLink="true">https://litterGuy.github.io/android/2020/12/15/%E6%97%A0%E6%B3%95%E8%BF%90%E8%A1%8CBazel%E9%97%AE%E9%A2%98.html</guid>
+        
+        <category>android</category>
+        
+        <category>bazel</category>
+        
+        
+        <category>android</category>
+        
+      </item>
+    
+      <item>
+        <title>docker重新进入容器时“/etc/profile”中环境变零失效问题</title>
+        <description>&lt;p&gt;在docker容器中的/etc/profile配置了环境变量，容器未重新启动是可以正常使用的，但是一旦重启就失效了，解决办法是在/root/.bashrc文件最下面添加如下指令：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;source /etc/profile
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;保存文件，然后执行：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;source /root/.bashrc
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这样再重启docker容器环境变量就不会丢失了。&lt;/p&gt;
+
+&lt;p&gt;也可以直接在/root/.bashrc配置文件中配置环境变量。&lt;/p&gt;
+</description>
+        <pubDate>Tue, 08 Dec 2020 17:32:05 +0000</pubDate>
+        <link>https://litterGuy.github.io/docker/2020/12/08/docker%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%87%8D%E6%96%B0%E8%BF%9B%E5%85%A5%E5%A4%B1%E6%95%88.html</link>
+        <guid isPermaLink="true">https://litterGuy.github.io/docker/2020/12/08/docker%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%87%8D%E6%96%B0%E8%BF%9B%E5%85%A5%E5%A4%B1%E6%95%88.html</guid>
+        
+        <category>docker</category>
+        
+        
+        <category>docker</category>
+        
+      </item>
+    
+      <item>
+        <title>docker开启api</title>
+        <description>&lt;h1 id=&quot;docker常见端口&quot;&gt;Docker常见端口&lt;/h1&gt;
+
+&lt;p&gt;常见docker端口包括：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;2375：未加密的docker socket,远程root无密码访问主机&lt;/p&gt;
+
+  &lt;p&gt;2376：tls加密套接字,很可能这是您的CI服务器4243端口作为https 443端口的修改&lt;/p&gt;
+
+  &lt;p&gt;2377：群集模式套接字,适用于群集管理器,不适用于docker客户端&lt;/p&gt;
+
+  &lt;p&gt;5000：docker注册服务&lt;/p&gt;
+
+  &lt;p&gt;4789和7946：覆盖网络&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1 id=&quot;开启配置&quot;&gt;开启配置&lt;/h1&gt;
+
+&lt;h2 id=&quot;方法一&quot;&gt;方法一&lt;/h2&gt;
+&lt;p&gt;首先是怎么配置远程访问的API：&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo vim /etc/default/docker
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;加入下面一行&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;DOCKER_OPTS=&quot;-H tcp://0.0.0.0:2375&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;重启docker即可：&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo systemctl restart docker
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;PS:这是网上给的配置方法，也是这种简单配置让Docker Daemon把服务暴露在tcp的2375端口上，这样就可以在网络上操作Docker了。Docker本身没有身份认证的功能，只要网络上能访问到服务端口，就可以操作Docker。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;方法二&quot;&gt;方法二&lt;/h2&gt;
+&lt;p&gt;在/usr/lib/systemd/system/docker.service，配置远程访问。&lt;/p&gt;
+
+&lt;p&gt;主要是在[Service]这个部分，加上下面两个参数&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# vim /usr/lib/systemd/system/docker.service
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix://var/run/docker.sock
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;重启&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;systemctl daemon-reload
+systemctl restart docker
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;方法三&quot;&gt;方法三&lt;/h2&gt;
+&lt;p&gt;下面修改daemon.json的配置&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vim /etc/docker/daemon.json
+
+{
+  &quot;hosts&quot;: [&quot;tcp://0.0.0.0:2375&quot;, &quot;unix:///var/run/docker.sock&quot;]
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“unix:///var/run/docker.sock”：unix socket，本地客户端将通过这个来连接 Docker Daemon。
+“tcp://0.0.0.0:2375”：tcp socket，表示允许任何远程客户端通过 2375 端口连接 Docker Daemon。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;修改配置以后&lt;/p&gt;
+
+&lt;p&gt;然后让docker重新读取配置文件,并重启docker服务&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;systemctl daemon-reload
+systemctl restart docker
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;查看docker进程：&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[root@slaver2 ~]# ps -ef|grep docker
+root      44221      1  1 18:16 ?        00:00:06 /usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix://var/run/docker.sock
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Docker守护进程打开一个HTTP Socket,这样才能实现远程通信&lt;/p&gt;
+
+&lt;p&gt;简单使用#
+-H为连接目标主机docker服务&lt;/p&gt;
+
+&lt;p&gt;查看docker版本&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[root@slaver2 /]# docker -H tcp://18.16.202.95:2375 version
+Client: Docker Engine - Community
+ Version:           19.03.0
+ API version:       1.40
+ Go version:        go1.12.5
+ Git commit:        aeac9490dc
+ Built:             Wed Jul 17 18:15:40 2019
+ OS/Arch:           linux/amd64
+ Experimental:      false
+Cannot connect to the Docker daemon at tcp://18.16.202.95:2375. Is the docker daemon running?
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;查看镜像包：&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[root@slaver2 ~]# docker -H tcp://18.16.202.95:2375 images
+REPOSITORY                                 TAG                 IMAGE ID            CREATED             SIZE
+zookeeper                                  3.5.5               3487af26dee9        4 weeks ago         225MB
+k8s.gcr.io/kube-apiserver                  v1.15.1             68c3eb07bfc3        8 weeks ago         207MB
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Tue, 01 Dec 2020 13:54:14 +0000</pubDate>
+        <link>https://litterGuy.github.io/docker/2020/12/01/docker%E5%BC%80%E5%90%AFapi.html</link>
+        <guid isPermaLink="true">https://litterGuy.github.io/docker/2020/12/01/docker%E5%BC%80%E5%90%AFapi.html</guid>
+        
+        <category>docker</category>
+        
+        
+        <category>docker</category>
+        
+      </item>
+    
+  </channel>
+</rss>

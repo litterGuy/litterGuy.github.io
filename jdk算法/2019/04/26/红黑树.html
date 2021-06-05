@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>红黑树</title>
+  <meta name="description" content="二叉查找树（BST）具备什么特性呢？">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/jdk%E7%AE%97%E6%B3%95/2019/04/26/%E7%BA%A2%E9%BB%91%E6%A0%91.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">红黑树</h1>
+    <p class="post-meta">2019-04-26</p>
+  </header>
+
+  <article class="post-content">
+    <p>二叉查找树（BST）具备什么特性呢？</p>
+
+<blockquote>
+
+  <p>1.左子树上所有结点的值均小于或等于它的根结点的值。</p>
+
+  <p>2.右子树上所有结点的值均大于或等于它的根结点的值。</p>
+
+  <p>3.左、右子树也分别为二叉排序树。</p>
+</blockquote>
+
+<p>红黑树是一种平衡二叉查找树。除了符合二叉查找树的基本特性外，它还具有下列的附加特性：</p>
+
+<blockquote>
+  <p>1.节点是红色或黑色。</p>
+
+  <p>2.根节点是黑色。</p>
+
+  <p>3.每个叶子节点都是黑色的空节点（NIL节点）。</p>
+
+  <p>4 每个红色节点的两个子节点都是黑色。(从每个叶子到根的所有路径上不能有两个连续的红色节点)</p>
+
+  <p>5.从任一节点到其每个叶子的所有路径都包含相同数目的黑色节点。</p>
+</blockquote>
+
+<p>以下是几种需要修复的场景：</p>
+
+<p>插入操作</p>
+
+<blockquote>
+  <p>新插入的节点是红色的，插入修复操作如果遇到父节点的颜色为黑则修复操作结束。也就是说，只有在父节点为红色节点的时候是需要插入修复操作的。</p>
+
+  <p>插入修复操作分为以下的三种情况，而且新插入的节点的父节点都是红色的：</p>
+
+  <ol>
+    <li>叔叔节点也为红色。</li>
+    <li>叔叔节点为空，且祖父节点、父节点和新节点处于一条斜线上。</li>
+    <li>叔叔节点为空，且祖父节点、父节点和新节点不处于一条斜线上。</li>
+  </ol>
+</blockquote>
+
+<p>删除操作</p>
+
+<blockquote>
+  <p>删除修复操作在遇到被删除的节点是红色节点或者到达root节点时，修复操作完毕。</p>
+
+  <p>删除修复操作是针对删除黑色节点才有的，当黑色节点被删除后会让整个树不符合RBTree的定义的第四条。需要做的处理是从兄弟节点上借调黑色的节点过来，如果兄弟节点没有黑节点可以借调的话，就只能往上追溯，将每一级的黑节点数减去一个，使得整棵树符合红黑树的定义。</p>
+
+  <p>删除操作的总体思想是从兄弟节点借调黑色节点使树保持局部的平衡，如果局部的平衡达到了，就看整体的树是否是平衡的，如果不平衡就接着向上追溯调整。</p>
+
+  <p>删除修复操作分为四种情况(删除黑节点后)：</p>
+
+  <ol>
+    <li>待删除的节点的兄弟节点是红色的节点。</li>
+    <li>待删除的节点的兄弟节点是黑色的节点，且兄弟节点的子节点都是黑色的。</li>
+    <li>待调整的节点的兄弟节点是黑色的节点，且兄弟节点的左子节点是红色的，右节点是黑色的(兄弟节点在右边)，如果兄弟节点在左边的话，就是兄弟节点的右子节点是红色的，左节点是黑色的。</li>
+    <li>待调整的节点的兄弟节点是黑色的节点，且右子节点是是红色的(兄弟节点在右边)，如果兄弟节点在左边，则就是对应的就是左节点是红色的。</li>
+  </ol>
+</blockquote>
+
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/jdk%E7%AE%97%E6%B3%95/2019/04/26/红黑树 data-title=红黑树 data-url=随笔杂记//jdk%E7%AE%97%E6%B3%95/2019/04/26/%E7%BA%A2%E9%BB%91%E6%A0%91.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

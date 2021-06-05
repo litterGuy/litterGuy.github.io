@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>泛型</title>
+  <meta name="description" content="泛型基础">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/jdk/2019/04/22/%E6%B3%9B%E5%9E%8B.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">泛型</h1>
+    <p class="post-meta">2019-04-22</p>
+  </header>
+
+  <article class="post-content">
+    <p><strong>泛型基础</strong></p>
+
+<hr />
+
+<ul>
+  <li>泛型类</li>
+</ul>
+
+<hr />
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class Box&lt;T&gt; {
+    // T stands for "Type"
+    private T t;
+    public void set(T t) { this.t = t; }
+    public T get() { return t; }
+}
+
+Box&lt;Integer&gt; integerBox = new Box&lt;Integer&gt;();
+Box&lt;Double&gt; doubleBox = new Box&lt;Double&gt;();
+Box&lt;String&gt; stringBox = new Box&lt;String&gt;();
+</code></pre></div></div>
+
+<ul>
+  <li>泛型方法</li>
+</ul>
+
+<hr />
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class Util {
+    public static &lt;K, V&gt; boolean compare(Pair&lt;K, V&gt; p1, Pair&lt;K, V&gt; p2) {
+        return p1.getKey().equals(p2.getKey()) &amp;&amp;
+               p1.getValue().equals(p2.getValue());
+    }
+}
+
+public class Pair&lt;K, V&gt; {
+    private K key;
+    private V value;
+    public Pair(K key, V value) {
+        this.key = key;
+        this.value = value;
+    }
+    public void setKey(K key) { this.key = key; }
+    public void setValue(V value) { this.value = value; }
+    public K getKey()   { return key; }
+    public V getValue() { return value; }
+}
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Pair&lt;Integer, String&gt; p1 = new Pair&lt;&gt;(1, "apple");
+Pair&lt;Integer, String&gt; p2 = new Pair&lt;&gt;(2, "pear");
+boolean same = Util.compare(p1, p2);
+</code></pre></div></div>
+
+<ul>
+  <li>边界符</li>
+</ul>
+
+<hr />
+
+<p>现在我们要实现这样一个功能，查找一个泛型数组中大于某个特定元素的个数，我们可以这样实现：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public static &lt;T&gt; int countGreaterThan(T[] anArray, T elem) {
+    int count = 0;
+    for (T e : anArray)
+        if (e &gt; elem)  // compiler error
+            ++count;
+    return count;
+}
+</code></pre></div></div>
+<p>但是这样很明显是错误的，因为除了short, int, double, long, float, byte, char等原始类型，其他的类并不一定能使用操作符&gt;，所以编译器报错，那怎么解决这个问题呢？答案是使用边界符。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public interface Comparable&lt;T&gt; {
+    public int compareTo(T o);
+}
+</code></pre></div></div>
+<p>做一个类似于下面这样的声明，这样就等于告诉编译器类型参数T代表的都是实现了Comparable接口的类，这样等于告诉编译器它们都至少实现了compareTo方法。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public static &lt;T extends Comparable&lt;T&gt;&gt; int countGreaterThan(T[] anArray, T elem) {
+    int count = 0;
+    for (T e : anArray)
+        if (e.compareTo(elem) &gt; 0)
+            ++count;
+    return count;
+}
+</code></pre></div></div>
+
+<ul>
+  <li>通配符</li>
+</ul>
+
+<hr />
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class Fruit {}
+class Apple extends Fruit {}
+class Orange extends Fruit {}
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>static class CovariantReader&lt;T&gt; {
+    T readCovariant(List&lt;? extends T&gt; list) {
+        return list.get(0);
+    }
+}
+
+static void f2() {
+    CovariantReader&lt;Fruit&gt; fruitReader = new CovariantReader&lt;Fruit&gt;();
+    Fruit f = fruitReader.readCovariant(fruit);
+    Fruit a = fruitReader.readCovariant(apples);
+}
+
+public static void main(String[] args) {
+    f2();
+}
+</code></pre></div></div>
+
+<blockquote>
+  <p>这样就相当与告诉编译器， fruitReader的readCovariant方法接受的参数只要是满足Fruit的子类就行(包括Fruit自身)，这样子类和父类之间的关系也就关联上了</p>
+</blockquote>
+
+<ul>
+  <li>PECS原则</li>
+</ul>
+
+<hr />
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class GenericWriting {
+    static List&lt;Apple&gt; apples = new ArrayList&lt;Apple&gt;();
+    static List&lt;Fruit&gt; fruit = new ArrayList&lt;Fruit&gt;();
+    static &lt;T&gt; void writeExact(List&lt;T&gt; list, T item) {
+        list.add(item);
+    }
+    static void f1() {
+        writeExact(apples, new Apple());
+        writeExact(fruit, new Apple());
+    }
+    
+    static &lt;T&gt; void writeWithWildcard(List&lt;? super T&gt; list, T item) {
+        list.add(item)
+    }
+    static void f2() {
+        writeWithWildcard(apples, new Apple());
+        writeWithWildcard(fruit, new Apple());
+    }
+    public static void main(String[] args) {
+        f1(); f2();
+    }
+}
+</code></pre></div></div>
+
+<blockquote>
+  <p>使用super的坏处是以后不能get容器里面的元素了，原因很简单，我们继续从编译器的角度考虑这个问题，对于List&lt;? super Apple&gt; list，它可以有下面几种含义：</p>
+
+  <p>List&lt;? super Apple&gt; list = new ArrayList<Apple>();
+List&lt;? super Apple&gt; list = new ArrayList<Fruit>();
+List&lt;? super Apple&gt; list = new ArrayList<object>();</object></Fruit></Apple></p>
+
+  <p>当我们尝试通过list来get一个Apple的时候，可能会get得到一个Fruit，这个Fruit可以是Orange等其他类型的Fruit。</p>
+</blockquote>
+
+<hr />
+
+<blockquote>
+  <p>”Producer Extends, Consumer Super”：</p>
+
+  <ul>
+    <li>“Producer Extends” – 如果你需要一个只读List，用它来produce T，那么使用? extends T。</li>
+    <li>“Consumer Super” – 如果你需要一个只写List，用它来consume T，那么使用? super T。</li>
+    <li>如果需要同时读取以及写入，那么我们就不能使用通配符了。</li>
+  </ul>
+</blockquote>
+
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/jdk/2019/04/22/泛型 data-title=泛型 data-url=随笔杂记//jdk/2019/04/22/%E6%B3%9B%E5%9E%8B.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

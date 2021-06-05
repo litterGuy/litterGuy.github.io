@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>Random String来打印出”Hello World”</title>
+  <meta name="description" content="```public static String randomString(int i){    Random ran = new Random(i);    StringBuilder sb = new StringBuilder();    while (true)    {        int k = ra...">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/jdk/2019/04/22/Random-String%E6%9D%A5%E6%89%93%E5%8D%B0%E5%87%BA-Hello-World.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">Random String来打印出”Hello World”</h1>
+    <p class="post-meta">2019-04-22</p>
+  </header>
+
+  <article class="post-content">
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public static String randomString(int i)
+{
+    Random ran = new Random(i);
+    StringBuilder sb = new StringBuilder();
+    while (true)
+    {
+        int k = ran.nextInt(27);
+        if (k == 0)
+            break;
+
+        sb.append((char)('`' + k));
+    }
+
+    return sb.toString();
+}
+</code></pre></div></div>
+
+<p>如果是一组选择好的随机数，那么事实上他们并不是真正随机的。随机数的算法是根据种子参数来进行计算的，（当前则是 -229985452 或者 -147909649）。每一次当申请一个随机数的时候，它会根据相同的随机数种子来生成一个相同的值 – 打印出”hello world”。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Random(-229985452).nextInt(27)
+</code></pre></div></div>
+
+<p>前六个随机数是：8，5，12，12，15，0.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Random(-147909649).nextInt(27)
+</code></pre></div></div>
+
+<p>前六个随机数是:23，15，18，12，4，0</p>
+
+<p>当你将这些数字转换成字符的时候</p>
+
+<p>104 –&gt; h
+101 –&gt; e
+108 –&gt; l
+108 –&gt; l
+111 –&gt; o</p>
+
+<p>119 –&gt; w
+111 –&gt; o
+114 –&gt; r
+108 –&gt; l
+100 –&gt; d</p>
+
+<p>你将获得hello world</p>
+
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/jdk/2019/04/22/Random String来打印出”Hello World” data-title=Random String来打印出”Hello World” data-url=随笔杂记//jdk/2019/04/22/Random-String%E6%9D%A5%E6%89%93%E5%8D%B0%E5%87%BA-Hello-World.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

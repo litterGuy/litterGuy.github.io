@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>内置锁与显示锁</title>
+  <meta name="description" content="Java中具有通过Synchronized实现的内置锁，和ReentrantLock实现的显示锁">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/jdk/2019/04/25/%E5%86%85%E7%BD%AE%E9%94%81%E4%B8%8E%E6%98%BE%E7%A4%BA%E9%94%81.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">内置锁与显示锁</h1>
+    <p class="post-meta">2019-04-25</p>
+  </header>
+
+  <article class="post-content">
+    <p>Java中具有通过Synchronized实现的内置锁，和ReentrantLock实现的显示锁</p>
+
+<ul>
+  <li>Synchronized</li>
+  <li>介绍
+    <blockquote>
+      <p>内置锁获得锁和释放锁是隐式的，进入synchronized修饰的代码就获得锁，走出相应的代码就释放锁。</p>
+    </blockquote>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> ```
+ synchronized(list){ //获得锁
+     list.append();
+     list.count();
+ }//释放锁
+ ```
+
+ &gt; 与Synchronized配套使用的通信方法通常有wait(),notify()。
+ &gt;
+ wait()方法会立即释放当前锁，并进入等待状态，等待到相应的notify并重新获得锁过后才能继续执行；notify()不会立刻立刻释放锁，必须要等notify()所在线程执行完synchronized块中的所有代码才会释放。
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>灵活性</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> &gt; 
+ 1. 内置锁在进入同步块时，采取的是无限等待的策略，一旦开始等待，就既不能中断也不能取消，容易产生饥饿与死锁的问题
+ 2. 在线程调用notify方法时，会随机选择相应对象的等待队列的一个线程将其唤醒，而不是按照FIFO的方式，如果有强烈的公平性要求，比如FIFO就无法满足
+</code></pre></div>    </div>
+  </li>
+  <li>ReentrantLock</li>
+  <li>介绍
+    <blockquote>
+      <p>ReentrantLock是显示锁，需要显示进行 lock 以及 unlock 操作。</p>
+    </blockquote>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> ```
+ Lock lock = new ReentrantLock();
+ lock.lock();
+ try{
+    
+ }finally{
+     lock.unlock();
+ }
+ ```
+
+ &gt; 相比于Synchronized要复杂一些，而且一定要记得在finally中释放锁而不是其他地方，这样才能保证即使出了异常也能释放锁。
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>灵活性</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> &gt; 
+ 1. lock.lockInterruptibly() 可以使得线程在等待锁是支持响应中断；lock.tryLock() 可以使得线程在等待一段时间过后如果还未获得锁就停止等待而非一直等待。有了这两种机制就可以更好的制定获得锁的重试机制，而非盲目一直等待，可以更好的避免饥饿和死锁问题
+ 2. ReentrantLock可以成为公平锁（非默认的），所谓公平锁就是锁的等待队列的FIFO，不过公平锁会带来性能消耗，如果不是必须的不建议使用。这和CPU对指令进行重排序的理由是相似的，如果强行的按照代码的书写顺序来执行指令，就会浪费许多时钟周期，达不到最大利用率
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<p>详细秒数可查看
+<a href="https://www.zybuluo.com/litterGuy/note/1456960">synchronized</a>
+<a href="https://www.zybuluo.com/litterGuy/note/1457339">ReentrantLock</a></p>
+
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/jdk/2019/04/25/内置锁与显示锁 data-title=内置锁与显示锁 data-url=随笔杂记//jdk/2019/04/25/%E5%86%85%E7%BD%AE%E9%94%81%E4%B8%8E%E6%98%BE%E7%A4%BA%E9%94%81.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>im部署文档</title>
+  <meta name="description" content="一、部署聊天服务器文件上传服务配置（一般由运维部署，也可以自己部署，后期统一）1、安装tomcat1、systemctl status tomcat（查看是否有安装的tomcat或使用 ps -ef|grep tomcat。有tomcat直接跳过该部）2、yum info tomcat3、yum -y insta...">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/im/2020/03/27/im%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">im部署文档</h1>
+    <p class="post-meta">2020-03-27</p>
+  </header>
+
+  <article class="post-content">
+    <p><strong>一、部署聊天服务器文件上传服务配置</strong>
+（一般由运维部署，也可以自己部署，后期统一）
+1、安装tomcat</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1、systemctl status tomcat（查看是否有安装的tomcat或使用 ps -ef|grep tomcat。有tomcat直接跳过该部）
+2、yum info tomcat
+3、yum -y install tomcat（默认安装到/usr/share/tomcat/）
+</code></pre></div></div>
+<blockquote>
+  <p>1、vi /usr/share/tomcat/conf/server.xml 修改server.xml 端口改为8088
+2、进入 /usr/share/tomcat/webapps/ 目录下 上传assist.war 
+3、systemctl start tomcat 启动tomcat解压包
+4、 vi /usr/share/tomcat/webapps/assist/WEB-INF/classes/jdbc.properties 修改当前数据库账
+号密码</p>
+</blockquote>
+
+<p>2、安装mysql</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1、wget https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+2、yum localinstall mysql57-community-release-el7-11.noarch.rpm
+3、yum repolist enabled | grep "mysql*.*-community.*"（查看是否源安装成功）
+4、yum install -y mysql-community-server
+5、systemctl start mysqld（启动）
+6、grep 'temporary password' /var/log/mysqld.log（查看默认生成的密码）
+</code></pre></div></div>
+<p>首次通过初始密码登录后，使用以下命令修改密码（修改为在jdbc.properties配置的文件）</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mysql -uroot -p
+set global validate_password_policy=0;
+set global validate_password_length=1;
+set password for 'root'@'localhost'=password('MyNewPass4!');
+flush privileges;
+</code></pre></div></div>
+<blockquote>
+  <p>注意：mysql 5.7 默认安装了密码安全检查插件（validate_password），默认密码检查策略要求密码必须包含：大小写字母、数字和特殊符号，并且长度不能少于8位。否则会提示 ERROR 1819 (HY000): Your password does not satisfy the current policy requirements 错误。</p>
+</blockquote>
+
+<p>修改账户为远程访问：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mysql&gt; use mysql;
+mysql&gt; UPDATE user SET Host='%' WHERE User='root';
+mysql&gt; flush privileges;
+</code></pre></div></div>
+
+<p>可参考：<a href="https://www.jianshu.com/p/1dab9a4d0d5f">安装mysql5.7</a></p>
+
+<p>3、创建数据库、导入表结构</p>
+
+<blockquote>
+  <p>执行tigasedb.sql文件</p>
+</blockquote>
+
+<p>4、重新启动tomcat</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl restart tomcat
+</code></pre></div></div>
+
+<hr />
+
+<p><strong>二、jackal服务部署</strong>
+1、下载github master代码 <a href="http://192.168.0.167/lxf/jacka">http://192.168.0.167/lxf/jacka</a>
+2、服务器创建项目目录和日志目录</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir /home/goApplication/jackal
+mkdir /home/goApplication/jackal/logs
+mkdir /home/goApplication/jackal/.cert/wss
+</code></pre></div></div>
+<p>或可使用以下命令直接创建</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir -p /root/goApplication/jackal;mkdir -p /root/goApplication/jackal/logs;mkdir -p /root/goApplication/jackal/.cert/wss
+</code></pre></div></div>
+
+<p>3、修改example.jackal.yml文件</p>
+
+<blockquote>
+  <p>修改log_path
+  修改pem_path
+  修改mysql账号密码库名
+  修改对外端口 默认host 0.0.0.0</p>
+</blockquote>
+
+<p>4、编译打包上传服务器</p>
+
+<blockquote>
+  <p>set GOARCH=amd64;set GOOS=linux;go build jackal-server.go</p>
+</blockquote>
+
+<p>window下分开执行：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set GOOS=linux
+set GOARCH=amd64
+go build jackal-server.go
+</code></pre></div></div>
+
+<blockquote>
+  <p>上传文件到/home/goApplication/jackal</p>
+
+  <p>赋权 chmod a+x ./jackal-server</p>
+
+  <p>上传jackal配置文件 /home/goApplication/jackal/example.jackal.yml</p>
+
+  <p>上传https证书文件（证书找运维要） 
+/home/goApplication/jackal/.cert/wss/cert.pem
+/home/goApplication/jackal/.cert/wss/key.pem</p>
+</blockquote>
+
+<p>5、创建数据库、导入表结构、插入一条数据测试聊天</p>
+
+<blockquote>
+  <p>执行jackal.sql文件</p>
+</blockquote>
+
+<p>6、增加系统启动</p>
+<blockquote>
+  <p>1、增加启动脚本 在/etc/systemd/system/
+  2、上传jackal.service脚本 赋权</p>
+</blockquote>
+
+<p>7、相关命令</p>
+<blockquote>
+  <p>开机启动 sudo systemctl enable jackal
+正常启动 sudo systemctl start jackal
+检查状态 sudo systemctl status jackal
+停止服务 sudo systemctl stop jackal
+杀死进程 sudo systemctl kill jackal.service
+重启服务 sudo systemctl restart jackal.service</p>
+</blockquote>
+
+<hr />
+
+<p><strong>三、ipim服务部署</strong>
+1、服务打包</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bee pack -be GOOS=linux
+</code></pre></div></div>
+<p>2、创建目录，上传服务器</p>
+
+<blockquote>
+  <p>1、mkdir -p /home/goApplication/ipim 
+2、上传ipim.tar.gz到该目录下 
+3、解压
+    tar zxvf ipim.tar.gz
+    rm -rf /home/goApplication/ipim/ipim.tar.gz
+4、赋权
+    chmod a+x run.sh
+    chmod a+x ipim
+5、 格式化脚本
+    sed -i ‘s/\r$//’ run.sh</p>
+</blockquote>
+
+<p>3、创建数据库、创建表结构</p>
+<blockquote>
+  <p>执行ipim.sql文件</p>
+</blockquote>
+
+<p>4、修改配置文件app.conf</p>
+
+<ul>
+  <li>
+    <p>修改数据库</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  db.host = 192.168.0.160
+  db.port = 3306
+  db.user = xinshangyun
+  db.password = xinshangyun
+  db.name = xinshangyun_immaster
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>修改redis</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  [cache]
+  redis_host = "192.168.0.242:6379"
+  redis_password = "Xs@Linyd@iM"
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>修改im服务</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  [im]
+  auth_username = "admin@localhost.localdomain"
+  auth_password = "tigase"
+  java_server = "192.168.0.242:8080"
+  go_server = "192.168.0.242:8888"
+  image = "http://192.168.0.242:9918"
+  addAdmin="http://192.168.0.242:8088"
+</code></pre></div>    </div>
+    <p>5、运行</p>
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  ./run.sh start
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<hr />
+
+<p><strong>注意：</strong></p>
+
+<blockquote>
+  <p>运维开放端口 9918、8888、5220、5221、5265、8088</p>
+</blockquote>
+
+<p>数据库表结构信息可到正式站导出，正式站信息如下：</p>
+
+<blockquote>
+  <p>ip：128.14.153.202 
+SSH用户: root 
+SSH密码: Z^NfTM!57@2019 
+SSH端口: 55022 
+FTP端口: 54138 
+MySql用户：root 
+密码: dLLpQacqyvjuXofyGBzh</p>
+</blockquote>
+
+<hr />
+<p>注意：
+    证书在运维那里要来的时候如果不是pem格式，则自己进行转换</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat client.crt client.key&gt; client.pem
+cat server.crt server.key &gt; server.pem
+</code></pre></div></div>
+
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/im/2020/03/27/im部署文档 data-title=im部署文档 data-url=随笔杂记//im/2020/03/27/im%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>

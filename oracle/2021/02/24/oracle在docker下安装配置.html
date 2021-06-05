@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>    
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <title>oracle在docker下的安装配置</title>
+  <meta name="description" content="oracle在docker下的安装配置">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://litterGuy.github.io/oracle/2021/02/24/oracle%E5%9C%A8docker%E4%B8%8B%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE.html">
+  <link rel="alternate" type="application/atom+xml" title="常理" href="https://litterGuy.github.io/feed.xml" />
+  <script src="/scripts/jquery-1.11.2.min.js"></script>
+  <script src="/scripts/pithy.js"></script>
+</head>
+
+
+  <body>
+    <header class="header">
+	<div class="header-container">
+		<div class="nav">
+			
+				<li>
+					<a href="/index.html">主页</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/archive.html">归档</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/category.html">目录</a>
+				</li>			
+			
+			
+				<li>
+					<a href="/about.html">关于</a>
+				</li>			
+			
+		</div>
+		<div class="description"> 随笔杂记 </div>		
+		<ul class="social-links">
+			<li>
+				<a href="https://github.com/litterGuy" title="Github">
+					<img width="19px" height="19px" src="/images/github.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="/feed.xml" title="RSS">
+					<img width="19px" height="19px" src="/images/rss.png"/>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/洛水尽" title="Twitter">
+					<img width="19px" height="19px" src="/images/twitter.png"/>
+				</a>
+			</li>
+		</ul>		
+	</div>
+</header>
+
+    <br>
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+  <br>
+  <header class="post-header">
+    <h1 class="post-title">oracle在docker下的安装配置</h1>
+    <p class="post-meta">2021-02-24</p>
+  </header>
+
+  <article class="post-content">
+    <h1 id="oracle在docker下的安装配置">oracle在docker下的安装配置</h1>
+
+<h2 id="安装">安装</h2>
+
+<ol>
+  <li>拉取镜像：使用的是truevoly/oracle-12c的镜像</li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker pull truevoly/oracle-12c
+</code></pre></div></div>
+
+<ol>
+  <li>启动</li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run -p 1521:1521 --name oracle_12c -d --restart=always truevoly/oracle-12c
+</code></pre></div></div>
+
+<ol>
+  <li>查看是否启动</li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker ps -a
+</code></pre></div></div>
+
+<h2 id="进入oracle">进入oracle</h2>
+
+<ol>
+  <li>通过以下命令进入容器</li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker exec -it oracle_12c /bin/bash
+</code></pre></div></div>
+
+<ol>
+  <li>oracle默认是安装在oracle用户下的</li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>su oracle
+</code></pre></div></div>
+
+<ol>
+  <li>找到sqlplus位置</li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd /u01/app/oracle/product/12.1.0/xe/
+</code></pre></div></div>
+
+<ol>
+  <li>登录</li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./sqlplus / as sysdba
+</code></pre></div></div>
+
+<h2 id="修改dba密码">修改dba密码</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>alter user sys identified by newpassword;
+alter user system identified by newpassword;
+alter profile default limit PASSWORD_LIFE_TIME UNLIMITED [设置密码时效，可以不管]
+</code></pre></div></div>
+
+<p>然后就可以通过dba帐号进行登陆了， 也可以使用工具进行登陆，默认SID :XE</p>
+
+<h2 id="创建用户授权">创建用户授权</h2>
+
+<p>一般给别人不可能给DBA帐号，所以必须为其创建帐号</p>
+
+<ol>
+  <li>create user xxx identified by password;</li>
+  <li>创建后你会发现你不能登陆，是因为没有授权，所以需要授权登陆权限：grant create session to xxx</li>
+  <li>登陆后你发现你没法建表、也没有表目录（使用管理工具的看不到你建的表的列表）等，还是权限不够，所以继续授权</li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>grant create table,unlimited tablespace to xxx;
+grant select any table to xxx;
+GRANT UPDATE ANY TABLE,DROP ANY TABLE,INSERT ANY TABLE TO xxx
+</code></pre></div></div>
+
+  </article>
+<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key=/oracle/2021/02/24/oracle在docker下安装配置 data-title=oracle在docker下的安装配置 data-url=随笔杂记//oracle/2021/02/24/oracle%E5%9C%A8docker%E4%B8%8B%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE.html></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"pawpaw"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+</div>
+
+      </div>
+    </div>
+    
+    <footer class="footer">
+  <div id="gotop">^</div>
+  <br>
+	@2015 Pithy Theme by Pawpaw.
+</footer>
+
+    
+  </body>
+
+</html>
