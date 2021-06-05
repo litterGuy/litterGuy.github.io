@@ -87,6 +87,13 @@ self_hostname: localhost
 self_hostname: 127.0.0.1
 ```
 
+## 初始化钱包
+```
+chia init
+
+chia keys generate
+```
+
 ## 启动钱包和节点
 
 ```
