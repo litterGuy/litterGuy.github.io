@@ -1,0 +1,504 @@
+---
+layout: post
+title:  "java应用打包exe执行文件"
+date:   2023-04-25 15:48:21
+categories: 
+   - java
+tags:
+   - java
+---
+
+# windows一键部署项目
+将使用的服务打包成一个exe应用程序，点击安装后运行、省去环境搭建和部署的时间。
+
+- [Inno Setup](https://jrsoftware.org/isinfo.php)，一款为Windows程序提供的免费安装程序，通过它可以将需要的文件压缩打包成exe安装程序，然后像安装程序一样解压到另外一个环境中。
+
+- 安装[中文语言包](https://jrsoftware.org/files/istrans/),将下载完成的安装包放在：“安装位置\Inno Setup 6\Languages”下，在生成安装文件的时候发现就能选择简体中文了。
+
+- 需要资源(选择免安装版本):
+[JDK1.8](https://www.oracle.com/java/technologies/downloads/#java8)、
+[Mysql8.0.32](https://downloads.mysql.com/archives/community/)、
+[Redis](https://github.com/microsoftarchive/redis/releases)、
+[Nginx](http://nginx.org/en/download.html)
+
+jdk本地安装后，后续打包exe时选择本地即可
+
+## exe4j
+使用[exe4j](https://exe4j.apponic.com/)将springboot应用的jar制作成可执行的exe文件
+
+```
+打开exe4j，输入注册码（可以不输，但是最终运行exe文件会提示：this executable was created with an evaluation version of exe4j），name和company可以随便输，注册码从下面随便选一个：
+A-XVK258563F-1p4lv7mg7sav
+
+A-XVK209982F-1y0i3h4ywx2h1
+
+A-XVK267351F-dpurrhnyarva
+
+A-XVK204432F-1kkoilo1jy2h3r
+
+A-XVK246130F-1l7msieqiwqnq
+
+A-XVK249554F-pllh351kcke50
+
+A-XVK238729F-25yn13iea25i
+
+A-XVK222711F-134h5ta8yxbm0
+
+A-XVK275016F-15wjjcbn4tpj
+
+A-XVK275016F-15wjjcbn4tpj
+```
+
+![激活][1]
+
+![下一步][2]
+
+![选择项目类型][3]
+
+![配置项目信息][4]
+
+![配置可执行文件][5]
+
+![选择生成位数][6]
+
+![下一步][7]
+
+**在VM参数配置的地方加上：-Dfile.encoding=utf-8**
+
+![配置jvm][8]
+
+![选择jar][9]
+
+![选择主类][10]
+
+![下一步][11]
+
+![下一步][12]
+
+![下一步][13]
+
+![下一步][14]
+
+![下一步][15]
+
+![下一步][16]
+
+![下一步][17]
+
+一直点击NEXT,直到出现以下页面,这时已经在最开始选的路径下生成了exe文件；可以运行一下看打包后的程序是否正常，这样下一步打包jre的时候就不会因为这里的问题了
+
+![下一步][18]
+
+
+## Inno Setup 打包安装程序
+
+![next][19]
+
+![next][20]
+
+![next][21]
+
+![next][22]
+
+![next][23]
+
+![next][24]
+
+![next][25]
+
+![next][26]
+
+![next][27]
+
+![next][28]
+
+![next][29]
+
+![next][30]
+
+![next][31]
+
+![next][32]
+
+**到这里会弹出问你是否马上编译，选择否！！！，先把脚本写好再自己编译**
+
+![next][33]
+
+**把修改脚本中的jre路径**
+
+![next][34]
+
+> 额外添加开机自启脚本（自行选择是否添加）
+
+```
+Name: "startupicon"; Description: "开机启动"; GroupDescription: "{cm:AdditionalIcons}";
+
+
+Name: "{commonstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: startupicon
+```
+
+![next][35]
+
+**然后直接编译，会提示保存当前脚本，随便起个名字，下个还可以继续用**
+
+![next][36]
+
+![next][37]
+
+![next][38]
+
+
+### redis
+
+1. redis服务初始化脚本
+新建init-redis.bat创建redis服务，此时会在注册表中添加redis服务的相关配置
+```
+@echo off
+redis-server --service-install redis.windows.conf --loglevel verbose
+```
+
+2. redis服务启动脚本
+新建start-redis.bat作为redis启动脚本
+```
+@echo off
+net start redis
+```
+
+3. redis服务停止与删除脚本
+新建stop-redis.bat删除redis服务，在卸载应用时会将注册表中的redis配置一起删除
+```
+@echo off
+cd /d %~dp0
+echo ----1.[Redis] start uninstalling Redis ---->>../log.txt
+sc stop Redis
+sc delete Redis
+echo ----2. [Redis] uninstall finished---- >>../log.txt
+exit
+```
+
+### nginx
+
+1. 启动nginx
+进入nginx目录，新建startNginx.bat文件
+```
+# 启动ngin
+start nginx.exe
+pause
+```
+2. 关闭nginx
+进入nginx目录，新建stopNginx.bat文件，在卸载应用时会执行此文件关闭nginx进程
+```
+@echo off
+set port=80
+for /f "tokens=1-5" %%i in ('netstat -ano^|findstr ":%port%"') do ( 
+    echo %%i %%j %%k %%l %%m
+
+    if "%%j" == "0.0.0.0:80" (
+        if "%%m" == "" (
+            TASKKILL /PID %%l /F
+        ) else (
+            TASKKILL /PID %%m /F
+        )
+        break
+    )
+)
+```
+3. 修改nginx配置
+编辑nginx配置文件nginx.conf，在你项目所使用的server块中添加反向代理配置和静态资源配置
+```
+location / {
+    root   ../dist;
+    try_files $uri $uri/ /index.html;
+            index  index.html index.htm;
+}
+
+location /prod-api/ {
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header REMOTE-HOST $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_pass http://localhost:8080/;
+}
+```
+
+### mysql
+1. mysql服务初始化脚本
+在mysql的bin目录下新建mysql_init.bat，此时会在注册表中添加redis服务的相关配置
+```
+@echo off
+rem将工作路径切换到当前脚本所在目录
+cd /d %~dp0
+
+echo %cd%
+ 
+rem开始安装mysql
+echo ----1.start installing Mysql ---->>../log.txt
+"%cd%\mysqld.exe" --initialize-insecure --user=mysql --console 
+cd ..
+set "mysqlpath=%cd%">>../log.txt
+cd bin
+mysqld install mysql-job --defaults-file="%mysqlpath%\my.ini"
+ 
+rem设置mysql开机自启
+echo ----2. start Mysql service---- >>../log.txt
+rem pause
+net start mysql-job
+sc config mysql-job  start= auto
+net stop mysql-job 
+net start mysql-job
+ 
+rem设置mysql环境变量，并进行创建数据库初始化
+echo ----3.setting Mysql environment ---->>../log.txt 
+cd ..
+rem设置mysql数据库root账户的密码为123456
+"%cd%\bin\mysqladmin" -u root password 123456
+"%cd%\bin\mysql.exe" -uroot -p123456 < "%cd%\sql\create.sql"
+echo %Path%
+echo %Path%|find /i "%mysqlpath%" && set IsNull=true || set IsNull=false
+echo %IsNull%
+if not %IsNull%==true (
+wmic ENVIRONMENT create name="MYSQL_HOME",username="<system>",VariableValue="%mysqlpath%"
+rem 追加path变量
+wmic ENVIRONMENT where "name='PATH' and username='<system>'" set VariableValue="%path%;%%MYSQL_HOME%%\bin;"
+echo ----4. Mysql environment create/append success---->>/log.txt 
+)
+exit
+```
+
+2. mysql服务停止与删除脚本
+在mysql的bin目录下新建mysql_stop.bat，在卸载应用时会执行此文件将注册表中的mysql配置一起删除
+```
+@echo off
+cd /d %~dp0
+echo ----1.[Mysql] start uninstalling Mysql ---->>../log.txt
+sc stop mysql-job
+sc delete mysql-job
+echo ----2. [Mysql] uninstall finished---- >>../log.txt
+exit
+```
+
+3. 配置文件
+在mysql的目录下新建my.ini，与bin目录同级
+```
+[mysqld]
+# mysql8遵循约定大于配置，basedir和datadir的配置交给mysql,否则mysql安装失败，
+# 如果使用的是较低版本，则需要指定basedir和datadir的配置
+# basedir ="C:\Program Files (x86)\mysql-8.0.30-winx64"
+# datadir ="C:\Program Files (x86)\mysql-8.0.30-winx64\data"
+
+port=3306
+server_id =10
+character-set-server=gbk
+character_set_filesystem=gbk
+max_allowed_packet=41942040
+[client]
+port=3306
+default-character-set=gbk
+[mysqld_safe]
+timezone="UTC"
+[mysql]
+default-character-set=utf8mb4
+```
+
+4. 数据库初始化
+在mysql的目录下新建目录sql，与bin目录同级，将导出的sql文件放在sql目录中。
+编辑create.sql文件，在脚本最顶行加入以下建库语句
+```
+DROP DATABASE IF EXISTS `word_press`;
+CREATE DATABASE word_press;
+USE word_press;
+```
+
+5. 注意
+在配置my.ini时，如果在mysql8的版本下配置了basedir和datadir，则在安装mysql服务时提示以下错误而导致安装失败
+```
+mysqld: Can't create directory 'C:\Program Files\MySQL\Data\' (OS errno 2 - No such file or directory)
+2018-09-19T06:45:53.339286Z 0 [System] [MY-013169] [Server] D:\Users\###\mysql-8.0.12-winx64\bin\mysqld.exe (mysqld 8.0.12) initializing of server in progress as process 3040
+2018-09-19T06:45:53.339401Z 0 [ERROR] [MY-010338] [Server] Can't find error-message file 'C:\Program Files\MySQL\share\errmsg.sys'. Check error-message file location and 'lc-messages-dir' configuration directive.
+2018-09-19T06:45:53.390068Z 0 [ERROR] [MY-010119] [Server] Aborting
+2018-09-19T06:45:53.398536Z 0 [System] [MY-010910] [Server] D:\Users\###\mysql-8.0.12-winx64\bin\mysqld.exe: Shutdown complete (mysqld 8.0.12)  MySQL Community Server - GPL.
+```
+
+## nginx redis mysql配置打包
+完整脚本如下：
+```
+; Script generated by the Inno Setup Script Wizard.
+; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
+
+#define MyAppName "ruoyi"
+#define MyAppVersion "v1.0"
+#define MyAppPublisher "changli"
+#define MyAppURL "https://litterguy.github.io/"
+#define MyAppExeName "ruoyi.exe"
+#define MyAppAssocName MyAppName + " File"
+#define MyAppAssocExt ".myp"
+#define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
+
+[Setup]
+; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
+; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
+AppId={{3241805E-91D3-4DFC-A78C-28B1CC76D5F0}
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+;AppVerName={#MyAppName} {#MyAppVersion}
+AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
+AppUpdatesURL={#MyAppURL}
+DefaultDirName={autopf}\{#MyAppName}
+; Uncomment the following line to run in non administrative install mode (install for current user only.)
+;PrivilegesRequired=lowest
+; 禁止用户自定义安装目录，避免用户安装在C盘以外的盘，否则mysql会安装失败
+DisableDirPage=yes
+; 制作好的安装包所在的目录
+; OutputDir=E:\innosetup\output
+OutputBaseFilename=ruoyi
+Compression=lzma
+SolidCompression=yes
+WizardStyle=modern
+; 用户协议位置
+LicenseFile=C:\Users\changli\Downloads\buildsetup\innosetup\license.rtf
+;AlwaysRestart=yes
+;PrivilegesRequired=admin
+
+[Languages]
+Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "startupicon"; Description: "开机启动"; GroupDescription: "{cm:AdditionalIcons}";
+
+[Files]
+Source: "C:\Users\changli\Downloads\buildsetup\exe4j\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\tools\java\jre\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\changli\Downloads\buildsetup\innosetup\mysql-8.0.32-winx64\*"; DestDir: "{app}\mysql"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\changli\Downloads\buildsetup\innosetup\Redis-x64-3.0.504\*"; DestDir: "{app}\Redis-x64-3.0.504"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\changli\Downloads\buildsetup\innosetup\nginx-1.24.0\*"; DestDir: "{app}\nginx-1.24.0"; Flags: ignoreversion recursesubdirs createallsubdirs
+; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+
+
+[Registry]
+Root: HKA; Subkey: "Software\Classes\{#MyAppAssocExt}\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppAssocKey}"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}"; ValueType: string; ValueName: ""; ValueData: "{#MyAppAssocName}"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"
+Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".myp"; ValueData: ""
+
+[Icons]
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{commonstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: startupicon
+
+[INI]
+;修改数据库配置文件
+Filename:"{app}\mysql\my.ini";Section:"mysqld";Key:"basedir"; String:"{app}\mysql"
+Filename:"{app}\mysql\my.ini";Section:"mysqld";Key:"datadir"; String:"{app}\mysql\data"
+Filename:"{app}\mysql\my.ini";Section:"mysqld";Key:"port"; String:"3306"
+Filename:"{app}\mysql\my.ini";Section:"client";Key:"port"; String:"3306"
+
+[Run]
+; 以下文件为mysql、nginx、redis组件启动的文件路径，
+Filename: "{app}\mysql-8.0.32-winx64\bin\mysql_init.bat";
+Filename: "{app}\nginx-1.24.0\startNginx.bat";
+Filename: "{app}\Redis-x64-3.0.504\init-redis.bat";
+Filename: "{app}\Redis-x64-3.0.504\start-redis.bat";
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[UninstallRun]
+; 卸载应用时执行以下文件
+Filename: "{app}\mysql-8.0.32-winx64\bin\mysql_stop.bat";
+Filename: "{app}\Redis-x64-3.0.504\stop-redis.bat";
+Filename: "{app}\nginx-1.24.0\stopNginx.bat";
+ 
+[UninstallDelete]
+ 
+Type:filesandordirs;Name:"{app}"
+```
+
+整体目录结构如下：
+![next][39]
+
+
+### 修改nginx服务
+1. 安装[winsw](https://github.com/winsw/winsw/releases)
+2. 编辑nginx脚本
+进入nginx目录，将下载的winsw复制到当前目录，并重命名为nginx-service.exe，再新建文件nginx-service.xml
+
+编辑nginx-service.xml
+```
+<service>
+  <!-- ID of the service. It should be unique across the Windows system-->
+  <id>nginx</id>
+  <!-- Display name of the service -->
+  <name>nginx</name>
+  <!-- Service description -->
+  <description>wordpress产品nginx服务</description>
+  <!-- Path to the executable, which should be started -->
+  <executable>%BASE%\nginx.exe</executable>
+  
+  <log mode="none"></log>
+
+</service>
+
+```
+
+编辑startNginx.bat
+```
+# nginx-service.exe读取nginx-service.xml配置，安装nginx服务，
+nginx-service.exe install
+# 启动nginx服务
+net start nginx
+# 设置nginx开机自启动
+sc config nginx  start=auto
+
+```
+
+编辑stopNginx.bat
+```
+# 停止nginx服务
+net stop nginx
+# 卸载nginx服务
+nginx-service.exe uninstall
+
+```
+
+
+[1]: images/innosetup/1.png
+[2]: images/innosetup/2.png
+[3]: images/innosetup/3.png
+[4]: images/innosetup/4.png
+[5]: images/innosetup/5.png
+[6]: images/innosetup/6.png
+[7]: images/innosetup/7.png
+[8]: images/innosetup/8.png
+[9]: images/innosetup/9.png
+[10]: images/innosetup/10.png
+[11]: images/innosetup/11.png
+[12]: images/innosetup/12.png
+[13]: images/innosetup/13.png
+[14]: images/innosetup/14.png
+[15]: images/innosetup/15.png
+[16]: images/innosetup/16.png
+[17]: images/innosetup/17.png
+[18]: images/innosetup/18.png
+[19]: images/innosetup/19.png
+[20]: images/innosetup/20.png
+[21]: images/innosetup/21.png
+[22]: images/innosetup/22.png
+[23]: images/innosetup/23.png
+[24]: images/innosetup/24.png
+[25]: images/innosetup/25.png
+[26]: images/innosetup/26.png
+[27]: images/innosetup/27.png
+[28]: images/innosetup/28.png
+[29]: images/innosetup/29.png
+[30]: images/innosetup/30.png
+[31]: images/innosetup/31.png
+[32]: images/innosetup/32.png
+[33]: images/innosetup/33.png
+[34]: images/innosetup/34.png
+[35]: images/innosetup/35.png
+[36]: images/innosetup/36.png
+[37]: images/innosetup/37.png
+[38]: images/innosetup/38.png
+[39]: images/innosetup/39.png
