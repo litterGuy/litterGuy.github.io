@@ -45,4 +45,24 @@ vivetool /enable /id:44774629,44776738,44850061,42105254,41655236
 2. 浏览器访问[https://www.bing.com/](https://www.bing.com/)时，看到的是新版bing
 
 
+## 系统更新后，图标消失
+
+1. 修改注册表
+
+Win+R打开"运行"对话框，输入“regedit”，打开注册表编辑器，找到路径：
+
+```
+\HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Copilot\BingChat\IsUserEligible
+```
+
+双击编辑键值，将数值数据由默认的“0”修改为“1”，点击“确定”保存
+
+**注意**: 在“BingChat”文件夹处单击右键，选择“导出”， 命名为“Copilot恢复显示”并保存为reg注册表文件，方便下次再重启消失时（推测之前消失也是Edge检测到了系统位置的缘故）双击直接导入注册表使用。
+
+2. 修改任务栏设置
+
+修改任务栏设置，以启用Copilot任务栏项。任务栏处单击右键，选择“任务栏设置”，然后你会看到Copilot选项已经是开启状态，但是任务栏仍然看不到，此时别着急，重新点击一下，再次打开，就可以在任务栏看到Copilot图标了。
+
+重新点击开关
+
 [1]: /images/clashx-tun.png
