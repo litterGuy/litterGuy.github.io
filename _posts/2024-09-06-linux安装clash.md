@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "linux 安装clash"
-date:   2024-09-05 17:39:40
+title:  "linux安装clash"
+date:   2024-09-06 08:09:54
 categories: 
    - linux
 tags:
