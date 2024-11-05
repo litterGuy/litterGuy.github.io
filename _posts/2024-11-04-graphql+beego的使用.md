@@ -9,7 +9,11 @@ tags:
 ---
 
 # GraphQL 使用
-
+0. 安装 gqlgen
+由于项目没有引用这个包，执行init操作会出错。所以先执行以下
+```
+go get github.com/99designs/gqlgen@latest
+```
 1. 安装和初始化 gqlgen
 ```
 go install github.com/99designs/gqlgen@latest
