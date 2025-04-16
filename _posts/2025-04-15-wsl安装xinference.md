@@ -38,6 +38,25 @@ netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=9997
 netsh interface portproxy show all
 ```
 
+### 注意
+Portproxy 依赖 Windows 的 iphlpsvc 服务。
+运行以下命令确保它正在运行：
+```
+Get-Service iphlpsvc
+```
+如果不是 Running 状态，使用：
+```
+Start-Service iphlpsvc
+```
+
+4. RuntimeError: Encoder not found for codec: mp3
+
+orchaudio 升级到 2.5.0 或更新的版本后，老的 ffmpeg 似乎不支持了。可以用 conda 安装：
+
+```
+conda install -c conda-forge "ffmpeg<7"
+```
+
 ## 启动
 ```
 xinference-local --host 0.0.0.0 --port 9997
